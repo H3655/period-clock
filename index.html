@@ -320,8 +320,77 @@ h1{font-size:1rem;letter-spacing:.3em;color:var(--text-mid);text-transform:upper
   font-size:.55rem;color:var(--text-dim);letter-spacing:.12em;padding:0 12px 4px;
 }
 
-/* CALENDAR */
-.cal-today-card{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:18px 22px;width:100%;text-align:center;}
+/* DURATION CALCULATOR */
+.span-inp{
+  background:var(--inp-bg);border:1px solid var(--border);border-radius:4px;
+  color:var(--accent);font-family:'Courier New',monospace;font-size:1.1rem;
+  padding:7px 0;width:68px;text-align:center;outline:none;transition:border-color .2s;
+  -moz-appearance:textfield;
+}
+.span-inp-pt{color:var(--accent4);}
+.span-inp::-webkit-outer-spin-button,.span-inp::-webkit-inner-spin-button{-webkit-appearance:none;}
+.span-inp:focus{border-color:var(--accent4);}
+.span-sep{font-size:1.4rem;color:var(--text-dim);padding-bottom:8px;}
+.span-preset{
+  padding:4px 10px;border:1px solid var(--border2);border-radius:4px;
+  background:transparent;color:var(--text-dim);font-family:'Courier New',monospace;
+  font-size:.6rem;letter-spacing:.1em;cursor:pointer;transition:all .15s;
+}
+.span-preset:hover{border-color:var(--accent);color:var(--accent);}
+.span-dir-label{font-size:.6rem;letter-spacing:.2em;color:var(--text-dim);text-align:center;margin-bottom:12px;}
+.span-res-big{font-size:clamp(1.6rem,5vw,2.4rem);color:var(--accent);font-weight:bold;letter-spacing:.05em;}
+.span-res-sub{font-size:.8rem;color:var(--text-mid);letter-spacing:.12em;margin-top:4px;}
+.span-breakdown{
+  display:grid;grid-template-columns:1fr 1fr;gap:6px;
+  border-top:1px solid var(--border2);padding-top:12px;margin-top:4px;
+}
+.span-bd-item{
+  background:var(--bg);border:1px solid var(--border2);border-radius:6px;
+  padding:8px 10px;text-align:center;
+}
+.span-bd-val{font-size:1.1rem;color:var(--info-span);font-weight:bold;letter-spacing:.04em;}
+.span-bd-lbl{font-size:.55rem;color:var(--text-dim);letter-spacing:.12em;margin-top:3px;}
+
+/* RANGE CALCULATOR */
+.rng-row{display:flex;align-items:flex-end;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
+.rng-lbl{font-size:.58rem;letter-spacing:.15em;color:var(--text-mid);display:block;margin-bottom:4px;}
+.rng-inp{
+  background:var(--inp-bg);border:1px solid var(--border);border-radius:4px;
+  color:var(--accent);font-family:'Courier New',monospace;font-size:.95rem;
+  padding:7px 8px;width:88px;text-align:center;outline:none;transition:border-color .2s;
+}
+.rng-inp-pt{color:var(--accent4);}
+.rng-inp:focus{border-color:var(--accent4);}
+.rng-arrow{font-size:1.1rem;color:var(--text-dim);padding-bottom:6px;flex-shrink:0;}
+.rng-overnight-row{display:flex;justify-content:center;margin-bottom:10px;}
+.rng-overnight-lbl{font-size:.62rem;color:var(--text-dim);letter-spacing:.08em;cursor:pointer;display:flex;align-items:center;}
+.rng-result-box{text-align:center;padding:8px 0 6px;}
+.rng-res-main{font-size:clamp(1.4rem,4.5vw,2.1rem);color:var(--accent);font-weight:bold;letter-spacing:.05em;}
+.rng-res-sub{font-size:.8rem;color:var(--text-mid);letter-spacing:.12em;margin-top:4px;}
+.rng-hint{text-align:center;font-size:.65rem;color:var(--conv-hint);letter-spacing:.12em;padding:8px 0;}
+.tz-mode-btn{
+  padding:3px 10px;border:1px solid var(--border);border-radius:4px;
+  background:var(--bg);color:var(--text-dim);font-family:'Courier New',monospace;
+  font-size:.6rem;letter-spacing:.15em;cursor:pointer;transition:all .2s;flex-shrink:0;
+}
+.tz-mode-btn:hover{border-color:var(--accent3);color:var(--accent3);}
+.tz-mode-btn.local{border-color:var(--accent3);color:var(--accent3);background:rgba(255,170,85,.08);}
+
+.rng-endpoints{
+  display:flex;flex-direction:column;gap:5px;
+  border-bottom:1px solid var(--border2);padding-bottom:10px;margin-bottom:6px;
+}
+.rng-ep-row{
+  display:flex;align-items:center;gap:8px;font-size:.7rem;
+}
+.rng-ep-tag{
+  font-size:.55rem;letter-spacing:.15em;color:var(--text-dim);
+  width:32px;flex-shrink:0;text-align:right;
+}
+.rng-ep-real{color:var(--accent);font-size:.85rem;min-width:72px;}
+.rng-ep-arrow{color:var(--text-dim);font-size:.75rem;flex-shrink:0;}
+.rng-ep-pt{color:var(--accent4);font-size:.85rem;}
+background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:18px 22px;width:100%;text-align:center;}
 .ct-month{font-size:.7rem;letter-spacing:.3em;color:var(--text-mid);margin-bottom:4px;}
 .ct-day{font-size:3.5rem;font-weight:bold;color:var(--accent);line-height:1;}
 .ct-year{font-size:1rem;color:var(--text-mid);margin-top:2px;}
@@ -497,6 +566,7 @@ h1{font-size:1rem;letter-spacing:.3em;color:var(--text-mid);text-transform:upper
     <button class="stb"        id="stb-timer"    onclick="showSubTab('timer')">⏬ <span class="stl" id="stl-timer">TIMER</span></button>
     <button class="stb"        id="stb-zones"    onclick="showSubTab('zones')">🌍 <span class="stl" id="stl-zones">ZONES</span></button>
     <button class="stb"        id="stb-alarms"   onclick="showSubTab('alarms')">🔔 <span class="stl" id="stl-alarms">ALARMS</span></button>
+    <button class="stb"        id="stb-span"     onclick="showSubTab('span')">⟺ <span class="stl" id="stl-span">CONVERT</span></button>
     <button class="stb"        id="stb-settings" onclick="showSubTab('settings')">⚙ <span class="stl" id="stl-settings">SETTINGS</span></button>
   </div>
 
@@ -544,23 +614,6 @@ h1{font-size:1rem;letter-spacing:.3em;color:var(--text-mid);text-transform:upper
       1 <span id="info-moment">moment</span> = <span>8.64 <span id="info-rs">real seconds</span></span><br>
       1 <span id="info-period">period</span> = <span>864 <span id="info-rs2">real seconds</span> (14 <span id="info-min">min</span> 24 <span id="info-sec">sec</span>)</span><br>
       <span id="info-day">Day: 100 periods × 100 moments = 10 000 moments</span>
-    </div>
-    <div class="box">
-      <div class="conv-title" id="conv-title">TIME CONVERTER</div>
-      <div class="conv-row">
-        <label id="lbl-real">REAL TIME</label>
-        <input id="real-input" type="text" placeholder="HH:MM:SS" maxlength="8"/>
-        <div class="conv-res" id="real-to-per">—</div>
-        <button class="copy-btn" id="copy-r" onclick="copyResult('real-to-per','copy-r')">⎘</button>
-      </div>
-      <hr class="conv-div">
-      <div class="conv-row">
-        <label id="lbl-per">PERIOD TIME</label>
-        <input id="per-input" type="text" placeholder="PP:OO" maxlength="5"/>
-        <div class="conv-res" id="per-to-real">—</div>
-        <button class="copy-btn" id="copy-p" onclick="copyResult('per-to-real','copy-p')">⎘</button>
-      </div>
-      <div class="conv-hint" id="conv-hint">Type a time and see the result instantly</div>
     </div>
   </div>
 
@@ -637,6 +690,153 @@ h1{font-size:1rem;letter-spacing:.3em;color:var(--text-mid);text-transform:upper
       <div class="alarm-err" id="alarm-err"></div>
       <div class="alarms-container" id="alarms-container"></div>
     </div>
+  </div>
+
+  <!-- DURATION/SPAN sub-pane -->
+  <div class="sub-pane" id="sp-span">
+
+    <!-- ── Clock-time converter ── -->
+    <div class="box" style="width:100%">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div class="conv-title" id="conv-title" style="margin-bottom:0">TIME CONVERTER</div>
+        <button class="tz-mode-btn" id="conv-tz-btn" onclick="toggleConvTZ()">UTC</button>
+      </div>
+      <div class="conv-row">
+        <label id="lbl-real">REAL TIME</label>
+        <input id="real-input" type="text" placeholder="HH:MM:SS" maxlength="8"/>
+        <div class="conv-res" id="real-to-per">—</div>
+        <button class="copy-btn" id="copy-r" onclick="copyResult('real-to-per','copy-r')">⎘</button>
+      </div>
+      <hr class="conv-div">
+      <div class="conv-row">
+        <label id="lbl-per">PERIOD TIME</label>
+        <input id="per-input" type="text" placeholder="PP:OO" maxlength="5"/>
+        <div class="conv-res" id="per-to-real">—</div>
+        <button class="copy-btn" id="copy-p" onclick="copyResult('per-to-real','copy-p')">⎘</button>
+      </div>
+      <div class="conv-hint" id="conv-hint">Type a time and see the result instantly</div>
+    </div>
+
+    <!-- ── Real → Period ── -->
+    <div class="box" style="width:100%">
+      <div class="conv-title" id="span-title">DURATION CONVERTER</div>
+      <div class="span-dir-label" id="span-dir-a"></div>
+
+      <div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;margin-bottom:14px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <label style="font-size:.58rem;letter-spacing:.15em;color:var(--text-mid)" id="span-lbl-h">HOURS</label>
+          <input id="span-h" class="span-inp" type="number" min="0" max="9999" step="1" placeholder="0" oninput="calcSpan()">
+        </div>
+        <span class="span-sep">:</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <label style="font-size:.58rem;letter-spacing:.15em;color:var(--text-mid)" id="span-lbl-m">MIN</label>
+          <input id="span-m" class="span-inp" type="number" min="0" max="59" step="1" placeholder="0" oninput="calcSpan()">
+        </div>
+        <span class="span-sep">:</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <label style="font-size:.58rem;letter-spacing:.15em;color:var(--text-mid)" id="span-lbl-s">SEC</label>
+          <input id="span-s" class="span-inp" type="number" min="0" max="59" step="1" placeholder="0" oninput="calcSpan()">
+        </div>
+      </div>
+
+      <div id="span-presets" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:16px"></div>
+
+      <div id="span-result" style="display:none">
+        <div style="text-align:center;padding:10px 0 6px">
+          <div class="span-res-big" id="span-res-main"></div>
+          <div class="span-res-sub" id="span-res-sub"></div>
+        </div>
+        <div id="span-breakdown" class="span-breakdown"></div>
+      </div>
+      <div id="span-empty" style="text-align:center;font-size:.65rem;color:var(--conv-hint);letter-spacing:.12em;padding:10px 0"></div>
+    </div>
+
+    <!-- ── Period → Real ── -->
+    <div class="box" style="width:100%">
+      <div class="span-dir-label" id="span-dir-b"></div>
+
+      <div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;margin-bottom:14px">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <label style="font-size:.58rem;letter-spacing:.15em;color:var(--text-mid)" id="span-lbl-pp">PERIODS</label>
+          <input id="span-pp" class="span-inp span-inp-pt" type="number" min="0" max="999999" step="1" placeholder="0" oninput="calcSpanRev()">
+        </div>
+        <span class="span-sep">:</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <label style="font-size:.58rem;letter-spacing:.15em;color:var(--text-mid)" id="span-lbl-oo">MOMENTS</label>
+          <input id="span-oo" class="span-inp span-inp-pt" type="number" min="0" max="99" step="1" placeholder="0" oninput="calcSpanRev()">
+        </div>
+        <span class="span-sep">.</span>
+        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+          <label style="font-size:.58rem;letter-spacing:.15em;color:var(--text-mid)" id="span-lbl-sub">×0.001</label>
+          <input id="span-sub" class="span-inp span-inp-pt" type="number" min="0" max="999" step="1" placeholder="0" oninput="calcSpanRev()">
+        </div>
+      </div>
+
+      <div id="span-rev-result" style="display:none">
+        <div style="text-align:center;padding:10px 0 6px">
+          <div class="span-res-big" id="span-rev-main"></div>
+          <div class="span-res-sub" id="span-rev-sub"></div>
+        </div>
+        <div id="span-rev-breakdown" class="span-breakdown"></div>
+      </div>
+      <div id="span-rev-empty" style="text-align:center;font-size:.65rem;color:var(--conv-hint);letter-spacing:.12em;padding:10px 0"></div>
+    </div>
+
+    <!-- ── Real timestamps → Period duration ── -->
+    <div class="box" style="width:100%">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+        <div class="conv-title" id="rng-title-a" style="margin-bottom:0">TIME RANGE → PERIOD DURATION</div>
+        <button class="tz-mode-btn" id="rng-tz-btn" onclick="toggleRngTZ()">UTC</button>
+      </div>
+      <div class="rng-row">
+        <label class="rng-lbl" id="rng-lbl-from-a">FROM</label>
+        <input id="rng-a-from" class="rng-inp" type="text" placeholder="HH:MM:SS" maxlength="8" oninput="calcRange()">
+        <span class="rng-arrow">→</span>
+        <label class="rng-lbl" id="rng-lbl-to-a">TO</label>
+        <input id="rng-a-to"   class="rng-inp" type="text" placeholder="HH:MM:SS" maxlength="8" oninput="calcRange()">
+      </div>
+      <div class="rng-overnight-row">
+        <label class="rng-overnight-lbl" id="rng-overnight-lbl">
+          <input type="checkbox" id="rng-overnight" onchange="calcRange()" style="margin-right:5px">
+          <span id="rng-overnight-txt">Overnight (end is next day)</span>
+        </label>
+      </div>
+      <div id="rng-result" style="display:none">
+        <div class="rng-result-box">
+          <div class="rng-res-main" id="rng-res-main"></div>
+          <div class="rng-res-sub"  id="rng-res-sub"></div>
+        </div>
+        <div id="rng-breakdown" class="span-breakdown"></div>
+      </div>
+      <div id="rng-empty" class="rng-hint"></div>
+    </div>
+
+    <!-- ── Period timestamps → Real duration ── -->
+    <div class="box" style="width:100%">
+      <div class="conv-title" id="rng-title-b">PERIOD RANGE → REAL DURATION</div>
+      <div class="rng-row">
+        <label class="rng-lbl" id="rng-lbl-from-b">FROM</label>
+        <input id="rng-b-from" class="rng-inp rng-inp-pt" type="text" placeholder="PP:OO" maxlength="5" oninput="calcRangeRev()">
+        <span class="rng-arrow">→</span>
+        <label class="rng-lbl" id="rng-lbl-to-b">TO</label>
+        <input id="rng-b-to"   class="rng-inp rng-inp-pt" type="text" placeholder="PP:OO" maxlength="5" oninput="calcRangeRev()">
+      </div>
+      <div class="rng-overnight-row">
+        <label class="rng-overnight-lbl">
+          <input type="checkbox" id="rng-b-overnight" onchange="calcRangeRev()" style="margin-right:5px">
+          <span id="rng-b-overnight-txt">Overnight (end is next day)</span>
+        </label>
+      </div>
+      <div id="rng-rev-result" style="display:none">
+        <div class="rng-result-box">
+          <div class="rng-res-main" id="rng-rev-main"></div>
+          <div class="rng-res-sub"  id="rng-rev-sub"></div>
+        </div>
+        <div id="rng-rev-breakdown" class="span-breakdown"></div>
+      </div>
+      <div id="rng-rev-empty" class="rng-hint"></div>
+    </div>
+
   </div>
 
   <!-- SETTINGS sub-pane -->
@@ -831,7 +1031,23 @@ const L={
     cdTitle:'COUNTDOWN TIMER',cdDuration:'DURATION PP:OO',cdDone:'⚡ TIME\'S UP!',cdStart:'START',cdStop:'PAUSE',cdReset:'RESET',
     tzTitle:'TIMEZONE COMPARATOR',tzAdd:'+ ADD',tzCity:'CITY',tzUTC:'UTC',tzTime:'TIME',tzPT:'P.TIME',
     today:'TODAY',evtSave:'SAVE',evtCancel:'CANCEL',evtAdd:'+ Add event',evtNoEvts:'Click a day to add events',
-    stTime:'TIME',stStop:'STOPWATCH',stTimer:'TIMER',stZones:'ZONES',stAlarms:'ALARMS',stSettings:'SETTINGS',
+    stTime:'TIME',stStop:'STOPWATCH',stTimer:'TIMER',stZones:'ZONES',stAlarms:'ALARMS',stSettings:'SETTINGS',stSpan:'CONVERT',
+    spanTitle:'DURATION CONVERTER',spanH:'HOURS',spanM:'MIN',spanS:'SEC',
+    spanHint:'Enter a duration to convert',
+    spanPeriods:'periods',spanMoments:'moments',spanSubMoments:'sub-moments',
+    spanDays:'days',spanReal:'real seconds',
+    spanBreakPeriods:'TOTAL PERIODS',spanBreakMoments:'TOTAL MOMENTS',
+    spanBreakSec:'REAL SECONDS',spanBreakDays:'REAL DAYS',
+    spanPresets:['1 min','5 min','15 min','30 min','1 hour','4 hours','8 hours','1 day'],
+    spanDirA:'REAL TIME  →  PERIOD TIME',spanDirB:'PERIOD TIME  →  REAL TIME',
+    spanLblPP:'PERIODS',spanLblOO:'MOMENTS',spanLblSub:'×0.001',
+    spanRevHint:'Enter period duration to convert',
+    spanRevH:'HOURS',spanRevM:'MINUTES',spanRevS:'SECONDS',
+    spanRevBreakH:'HOURS',spanRevBreakM:'MINUTES',spanRevBreakS:'SECONDS',spanRevBreakSec:'TOTAL SECONDS',
+    rngTitleA:'TIME RANGE → PERIOD DURATION',rngTitleB:'PERIOD RANGE → REAL DURATION',
+    rngFrom:'FROM',rngTo:'TO',rngOvernight:'Overnight (end is next day)',
+    rngHintA:'Enter two clock times to get the period duration',
+    rngHintB:'Enter two period times to get the real duration',
   },
   sv:{
     title:'Periodklocka',units:'PERIOD : ÖGONBLICK',p:'PERIOD',o:'ÖGONBLICK',
@@ -864,7 +1080,23 @@ const L={
     cdTitle:'NEDRÄKNING',cdDuration:'LÄNGD PP:OO',cdDone:'⚡ KLAR!',cdStart:'STARTA',cdStop:'PAUSA',cdReset:'NOLLSTÄLL',
     tzTitle:'TIDSZONER',tzAdd:'+ LÄGG TILL',tzCity:'ORT',tzUTC:'UTC',tzTime:'TID',tzPT:'P.TID',
     today:'IDAG',evtSave:'SPARA',evtCancel:'AVBRYT',evtAdd:'+ Lägg till händelse',evtNoEvts:'Klicka en dag för att lägga till händelser',
-    stTime:'TID',stStop:'TIDTAGARUR',stTimer:'TIMER',stZones:'ZONER',stAlarms:'LARM',stSettings:'INSTÄLLNINGAR',
+    stTime:'TID',stStop:'TIDTAGARUR',stTimer:'TIMER',stZones:'ZONER',stAlarms:'LARM',stSettings:'INSTÄLLNINGAR',stSpan:'KONVERTERA',
+    spanTitle:'VARAKTIGHETSOMVANDLARE',spanH:'TIMMAR',spanM:'MIN',spanS:'SEK',
+    spanHint:'Ange en varaktighet för att konvertera',
+    spanPeriods:'perioder',spanMoments:'ögonblick',spanSubMoments:'delögonblick',
+    spanDays:'dagar',spanReal:'riktiga sekunder',
+    spanBreakPeriods:'TOTALA PERIODER',spanBreakMoments:'TOTALA ÖGONBLICK',
+    spanBreakSec:'RIKTIGA SEKUNDER',spanBreakDays:'RIKTIGA DAGAR',
+    spanPresets:['1 min','5 min','15 min','30 min','1 timme','4 timmar','8 timmar','1 dag'],
+    spanDirA:'VERKLIG TID  →  PERIODTID',spanDirB:'PERIODTID  →  VERKLIG TID',
+    spanLblPP:'PERIODER',spanLblOO:'ÖGONBLICK',spanLblSub:'×0.001',
+    spanRevHint:'Ange en periodvaraktighet för att konvertera',
+    spanRevH:'TIMMAR',spanRevM:'MINUTER',spanRevS:'SEKUNDER',
+    spanRevBreakH:'TIMMAR',spanRevBreakM:'MINUTER',spanRevBreakS:'SEKUNDER',spanRevBreakSec:'TOTALA SEKUNDER',
+    rngTitleA:'TIDSINTERVALL → PERIODTID',rngTitleB:'PERIODINTERVALL → VERKLIG TID',
+    rngFrom:'FRÅN',rngTo:'TILL',rngOvernight:'Nästa dag (slutet är dagen efter)',
+    rngHintA:'Ange två klockslag för att få periodvaraktigheten',
+    rngHintB:'Ange två periodtider för att få den verkliga varaktigheten',
   }
 };
 
@@ -892,7 +1124,21 @@ function setLang(lang){
   s('alarms-title',l.alarmTitle);
   s('today-btn',l.today);s('evt-save-btn',l.evtSave);s('evt-cancel-btn',l.evtCancel);
   s('stl-time',l.stTime);s('stl-stop',l.stStop);s('stl-timer',l.stTimer);
-  s('stl-zones',l.stZones);s('stl-alarms',l.stAlarms);s('stl-settings',l.stSettings);
+  s('stl-zones',l.stZones);s('stl-alarms',l.stAlarms);s('stl-settings',l.stSettings);s('stl-span',l.stSpan);
+  s('span-title',l.spanTitle);s('span-lbl-h',l.spanH);s('span-lbl-m',l.spanM);s('span-lbl-s',l.spanS);
+  s('span-dir-a',l.spanDirA);s('span-dir-b',l.spanDirB);
+  s('span-lbl-pp',l.spanLblPP);s('span-lbl-oo',l.spanLblOO);s('span-lbl-sub',l.spanLblSub);
+  const se=g('span-empty');if(se)se.textContent=l.spanHint;
+  const sre=g('span-rev-empty');if(sre)sre.textContent=l.spanRevHint;
+  s('rng-title-a',l.rngTitleA);s('rng-title-b',l.rngTitleB);
+  s('rng-lbl-from-a',l.rngFrom);s('rng-lbl-to-a',l.rngTo);
+  s('rng-lbl-from-b',l.rngFrom);s('rng-lbl-to-b',l.rngTo);
+  s('rng-overnight-txt',l.rngOvernight);s('rng-b-overnight-txt',l.rngOvernight);
+  const re=g('rng-empty');if(re)re.textContent=l.rngHintA;
+  const rre=g('rng-rev-empty');if(rre)rre.textContent=l.rngHintB;
+  renderSpanPresets();
+  const rngEmp=g('rng-empty');if(rngEmp)rngEmp.textContent=L[currentLang].rngHintA;
+  const rngRevEmp=g('rng-rev-empty');if(rngRevEmp)rngRevEmp.textContent=L[currentLang].rngHintB;
   document.getElementById('btn-en').classList.toggle('active',lang==='en');
   document.getElementById('btn-sv').classList.toggle('active',lang==='sv');
   document.getElementById('t-dark').dataset.tip=l.dark;
@@ -1019,24 +1265,57 @@ function update(){
 }
 
 // ── Converter ──
-function realToPer(str){
+let convUseLocal=false, rngUseLocal=false;
+
+function localOffsetSec(){
+  // getTimezoneOffset returns minutes (positive = behind UTC, negative = ahead)
+  return -(new Date().getTimezoneOffset()*60);
+}
+function localOffsetLabel(){
+  const off=localOffsetSec();
+  const abs=Math.abs(off),h=Math.floor(abs/3600),m=Math.floor((abs%3600)/60);
+  return`LOCAL (UTC${off>=0?'+':'-'}${h}${m?':'+p2(m):''})`;
+}
+
+function toggleConvTZ(){
+  convUseLocal=!convUseLocal;
+  const btn=g('conv-tz-btn');
+  btn.textContent=convUseLocal?localOffsetLabel():'UTC';
+  btn.classList.toggle('local',convUseLocal);
+  // re-trigger both converters
+  g('real-input').dispatchEvent(new Event('input'));
+  g('per-input').dispatchEvent(new Event('input'));
+}
+function toggleRngTZ(){
+  rngUseLocal=!rngUseLocal;
+  const btn=g('rng-tz-btn');
+  btn.textContent=rngUseLocal?localOffsetLabel():'UTC';
+  btn.classList.toggle('local',rngUseLocal);
+  calcRange();
+}
+
+function realToPer(str, offsetSec=0){
   const p=str.split(':').map(Number);if(p.some(isNaN))return null;
   const[h=0,m=0,sec=0]=p;if(h>23||m>59||sec>59)return null;
-  const t=((h*3600+m*60+sec)/RSPD)*MPD;
+  const utcSec=((h*3600+m*60+sec)-offsetSec+86400)%86400;
+  const t=(utcSec/RSPD)*MPD;
   return`${p2(Math.floor(t/100))}:${p2(Math.floor(t%100))}`;
 }
-function perToReal(str){
+function perToReal(str, offsetSec=0){
   const p=str.split(':').map(Number);if(p.some(isNaN))return null;
   const[pp=0,o=0]=p;if(pp>99||o>99)return null;
   const rs=((pp*100+o)/MPD)*RSPD;
-  return`${p2(Math.floor(rs/3600))}:${p2(Math.floor((rs%3600)/60))}:${p2(Math.floor(rs%60))}`;
+  const localSec=(rs+offsetSec+86400)%86400;
+  return`${p2(Math.floor(localSec/3600))}:${p2(Math.floor((localSec%3600)/60))}:${p2(Math.floor(localSec%60))}`;
 }
 g('real-input').addEventListener('input',function(){
-  const r=realToPer(this.value.trim()),el=g('real-to-per');
+  const off=convUseLocal?localOffsetSec():0;
+  const r=realToPer(this.value.trim(),off),el=g('real-to-per');
   el.textContent=r||'—';el.style.color=r?'var(--conv-res)':'var(--conv-hint)';
 });
 g('per-input').addEventListener('input',function(){
-  const r=perToReal(this.value.trim()),el=g('per-to-real');
+  const off=convUseLocal?localOffsetSec():0;
+  const r=perToReal(this.value.trim(),off),el=g('per-to-real');
   el.textContent=r||'—';el.style.color=r?'var(--conv-res)':'var(--conv-hint)';
 });
 function copyResult(rid,bid){
@@ -1414,6 +1693,281 @@ function updateCalToday(){
   s('ct-greg',l.gregDate(now.getUTCDate(),now.getUTCMonth(),now.getUTCFullYear()));
 }
 
+// ── DURATION CALCULATOR ──
+const SPAN_PRESETS=[60,300,900,1800,3600,14400,28800,86400];
+
+function renderSpanPresets(){
+  const cont=g('span-presets');if(!cont)return;
+  const l=L[currentLang];
+  cont.innerHTML=SPAN_PRESETS.map((sec,i)=>`
+    <button class="span-preset" onclick="setSpanPreset(${sec})">${l.spanPresets[i]}</button>
+  `).join('');
+  const se=g('span-empty');if(se)se.textContent=l.spanHint;
+  const sre=g('span-rev-empty');if(sre)sre.textContent=l.spanRevHint;
+  s('span-dir-a',l.spanDirA);s('span-dir-b',l.spanDirB);
+  s('span-lbl-pp',l.spanLblPP);s('span-lbl-oo',l.spanLblOO);s('span-lbl-sub',l.spanLblSub);
+}
+
+function setSpanPreset(totalSec){
+  const h=Math.floor(totalSec/3600);
+  const m=Math.floor((totalSec%3600)/60);
+  const s2=totalSec%60;
+  g('span-h').value=h||'';
+  g('span-m').value=m||'';
+  g('span-s').value=s2||'';
+  calcSpan();
+}
+
+function calcSpan(){
+  const l=L[currentLang];
+  const h=parseFloat(g('span-h').value)||0;
+  const m=parseFloat(g('span-m').value)||0;
+  const sec=parseFloat(g('span-s').value)||0;
+  const totalSec=h*3600+m*60+sec;
+
+  const res=g('span-result'),emp=g('span-empty');
+  if(totalSec<=0){res.style.display='none';emp.style.display='';return;}
+  res.style.display='';emp.style.display='none';
+
+  const totalMoments=(totalSec/RSPD)*MPD;
+  const wholePeriods=Math.floor(totalMoments/100);
+  const wholeRemainder=Math.floor(totalMoments%100);
+  const subMoments=Math.floor((totalMoments%1)*1000);
+  const totalMomentsWhole=Math.floor(totalMoments);
+  const realDays=totalSec/86400;
+
+  s('span-res-main',`${wholePeriods} ${l.spanPeriods}  ${p2(wholeRemainder)} ${l.spanMoments}`);
+  s('span-res-sub',`.${p3(subMoments)} ${l.spanSubMoments}`);
+
+  g('span-breakdown').innerHTML=`
+    <div class="span-bd-item">
+      <div class="span-bd-val">${wholePeriods}</div>
+      <div class="span-bd-lbl">${l.spanBreakPeriods}</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${fmtNum(totalMomentsWhole)}</div>
+      <div class="span-bd-lbl">${l.spanBreakMoments}</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${fmtNum(Math.round(totalSec))}</div>
+      <div class="span-bd-lbl">${l.spanBreakSec}</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${realDays>=1?realDays.toFixed(4):totalSec>=60?(totalSec/60).toFixed(2)+' min':totalSec.toFixed(1)+' s'}</div>
+      <div class="span-bd-lbl">${realDays>=1?l.spanBreakDays:totalSec>=60?'REAL MINUTES':'REAL SECONDS'}</div>
+    </div>
+  `;
+}
+
+function calcSpanRev(){
+  const l=L[currentLang];
+  const pp=parseFloat(g('span-pp').value)||0;
+  const oo=parseFloat(g('span-oo').value)||0;
+  const sub=parseFloat(g('span-sub').value)||0;
+
+  const res=g('span-rev-result'),emp=g('span-rev-empty');
+  if(pp===0&&oo===0&&sub===0){res.style.display='none';emp.style.display='';return;}
+  res.style.display='';emp.style.display='none';
+
+  // total moments (with fractional from sub)
+  const totalMoments = pp*100 + oo + sub/1000;
+  // convert to real seconds: moments / MPD * RSPD
+  const totalSec = (totalMoments / MPD) * RSPD;
+
+  const totalSecInt = Math.floor(totalSec);
+  const hours   = Math.floor(totalSecInt / 3600);
+  const minutes = Math.floor((totalSecInt % 3600) / 60);
+  const seconds = totalSecInt % 60;
+  const ms      = Math.round((totalSec - totalSecInt) * 1000);
+
+  // main display: H:MM:SS.mmm
+  const mainStr = `${hours}h ${p2(minutes)}m ${p2(seconds)}s`;
+  const subStr  = `.${p3(ms)}`;
+
+  s('span-rev-main', mainStr);
+  s('span-rev-sub', subStr);
+
+  const realDays = totalSec / 86400;
+
+  g('span-rev-breakdown').innerHTML=`
+    <div class="span-bd-item">
+      <div class="span-bd-val">${hours}</div>
+      <div class="span-bd-lbl">${l.spanRevBreakH}</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${hours*60+minutes}</div>
+      <div class="span-bd-lbl">${l.spanRevBreakM}</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${fmtNum(totalSecInt)}</div>
+      <div class="span-bd-lbl">${l.spanRevBreakSec}</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${realDays>=1?realDays.toFixed(4):realDays>=1/1440?(realDays*1440).toFixed(2)+' min':totalSec.toFixed(1)+' s'}</div>
+      <div class="span-bd-lbl">${realDays>=1?l.spanBreakDays:realDays>=1/1440?'REAL MINUTES':'REAL SECONDS'}</div>
+    </div>
+  `;
+}
+
+// parse HH:MM:SS or HH:MM → total seconds, null on fail
+function parseRealTime(str){
+  const p=str.trim().split(':').map(Number);
+  if(p.some(isNaN)||p.length<2)return null;
+  const[h=0,m=0,sec=0]=p;
+  if(h>23||m>59||sec>59)return null;
+  return h*3600+m*60+sec;
+}
+// parse PP:OO → total moments (float), null on fail
+function parsePeriodTime(str){
+  const p=str.trim().split(':').map(Number);
+  if(p.some(isNaN)||p.length<2)return null;
+  const[pp=0,oo=0]=p;
+  if(pp>99||oo>99)return null;
+  return pp*100+oo;
+}
+
+// sec → "PP:OO"
+function secToPT(sec){
+  const t=(sec/RSPD)*MPD;
+  return`${p2(Math.floor(t/100))}:${p2(Math.floor(t%100))}`;
+}
+// moments → "HH:MM:SS"
+function momToReal(mom){
+  const sec=Math.floor((mom/MPD)*RSPD);
+  return`${p2(Math.floor(sec/3600))}:${p2(Math.floor((sec%3600)/60))}:${p2(sec%60)}`;
+}
+
+function calcRange(){
+  const l=L[currentLang];
+  const fromSec=parseRealTime(g('rng-a-from').value);
+  const toSec  =parseRealTime(g('rng-a-to').value);
+  const res=g('rng-result'),emp=g('rng-empty');
+  if(fromSec===null||toSec===null){res.style.display='none';emp.style.display='';emp.textContent=l.rngHintA;return;}
+
+  const overnight=g('rng-overnight').checked;
+  let diffSec=toSec-fromSec;
+  if(overnight||diffSec<0)diffSec+=86400;
+
+  // Convert input times to UTC seconds for period calculation
+  const off=rngUseLocal?localOffsetSec():0;
+  const fromUTC=(fromSec-off+86400)%86400;
+  const toUTC  =(toSec  -off+86400)%86400;
+
+  const totalMoments=(diffSec/RSPD)*MPD;
+  const wholePeriods=Math.floor(totalMoments/100);
+  const rem=Math.floor(totalMoments%100);
+  const sub=Math.floor((totalMoments%1)*1000);
+
+  // format endpoint display
+  const fH=Math.floor(fromSec/3600),fM=Math.floor((fromSec%3600)/60),fS=fromSec%60;
+  const tH=Math.floor(toSec/3600),  tM=Math.floor((toSec%3600)/60),  tS=toSec%60;
+  const fromReal=`${p2(fH)}:${p2(fM)}:${p2(fS)}`;
+  const toReal  =`${p2(tH)}:${p2(tM)}:${p2(tS)}`;
+  const fromPT  =secToPT(fromUTC);
+  const toPT    =secToPT(toUTC);
+
+  res.style.display='';emp.style.display='none';
+  s('rng-res-main',`${wholePeriods} ${l.spanPeriods}  ${p2(rem)} ${l.spanMoments}`);
+  s('rng-res-sub',`.${p3(sub)} ${l.spanSubMoments}`);
+
+  const h=Math.floor(diffSec/3600),m=Math.floor((diffSec%3600)/60),sec=diffSec%60;
+  g('rng-breakdown').innerHTML=`
+    <div class="rng-endpoints" style="grid-column:1/-1">
+      <div class="rng-ep-row">
+        <span class="rng-ep-tag">${l.rngFrom}</span>
+        <span class="rng-ep-real">${fromReal}</span>
+        <span class="rng-ep-arrow">→</span>
+        <span class="rng-ep-pt">${fromPT}</span>
+      </div>
+      <div class="rng-ep-row">
+        <span class="rng-ep-tag">${l.rngTo}</span>
+        <span class="rng-ep-real">${toReal}</span>
+        <span class="rng-ep-arrow">→</span>
+        <span class="rng-ep-pt">${toPT}</span>
+      </div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${wholePeriods}:${p2(rem)}</div>
+      <div class="span-bd-lbl">${l.spanBreakPeriods} : ${l.spanMoments}</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${fmtNum(Math.floor(totalMoments))}</div>
+      <div class="span-bd-lbl">${l.spanBreakMoments}</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${p2(h)}:${p2(m)}:${p2(sec)}</div>
+      <div class="span-bd-lbl">H : M : S</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${fmtNum(diffSec)}</div>
+      <div class="span-bd-lbl">${l.spanBreakSec}</div>
+    </div>
+  `;
+}
+
+function calcRangeRev(){
+  const l=L[currentLang];
+  const fromMom=parsePeriodTime(g('rng-b-from').value);
+  const toMom  =parsePeriodTime(g('rng-b-to').value);
+  const res=g('rng-rev-result'),emp=g('rng-rev-empty');
+  if(fromMom===null||toMom===null){res.style.display='none';emp.style.display='';emp.textContent=l.rngHintB;return;}
+
+  const overnight=g('rng-b-overnight').checked;
+  let diffMom=toMom-fromMom;
+  if(overnight||diffMom<0)diffMom+=10000;
+
+  const totalSec=(diffMom/MPD)*RSPD;
+  const totalSecInt=Math.floor(totalSec);
+  const hours=Math.floor(totalSecInt/3600);
+  const minutes=Math.floor((totalSecInt%3600)/60);
+  const seconds=totalSecInt%60;
+  const ms=Math.round((totalSec-totalSecInt)*1000);
+
+  // format input times for display
+  const fromPTstr=`${p2(Math.floor(fromMom/100))}:${p2(Math.floor(fromMom%100))}`;
+  const toPTstr  =`${p2(Math.floor(toMom/100))}:${p2(Math.floor(toMom%100))}`;
+  const fromRealStr=momToReal(fromMom);
+  const toRealStr  =momToReal(toMom);
+
+  res.style.display='';emp.style.display='none';
+  s('rng-rev-main',`${hours}h ${p2(minutes)}m ${p2(seconds)}s`);
+  s('rng-rev-sub',`.${p3(ms)}`);
+
+  const pp=Math.floor(diffMom/100),oo=Math.floor(diffMom%100);
+  g('rng-rev-breakdown').innerHTML=`
+    <div class="rng-endpoints" style="grid-column:1/-1">
+      <div class="rng-ep-row">
+        <span class="rng-ep-tag">${l.rngFrom}</span>
+        <span class="rng-ep-real" style="color:var(--accent4)">${fromPTstr}</span>
+        <span class="rng-ep-arrow">→</span>
+        <span class="rng-ep-pt" style="color:var(--accent)">${fromRealStr}</span>
+      </div>
+      <div class="rng-ep-row">
+        <span class="rng-ep-tag">${l.rngTo}</span>
+        <span class="rng-ep-real" style="color:var(--accent4)">${toPTstr}</span>
+        <span class="rng-ep-arrow">→</span>
+        <span class="rng-ep-pt" style="color:var(--accent)">${toRealStr}</span>
+      </div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${pp}:${p2(oo)}</div>
+      <div class="span-bd-lbl">P : M SPAN</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${hours*60+minutes}</div>
+      <div class="span-bd-lbl">${l.spanRevBreakM}</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${p2(hours)}:${p2(minutes)}:${p2(seconds)}</div>
+      <div class="span-bd-lbl">H : M : S</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${fmtNum(totalSecInt)}</div>
+      <div class="span-bd-lbl">${l.spanRevBreakSec}</div>
+    </div>
+  `;
+}
+
 // ── Fullscreen ──
 function toggleFS(){
   if(!document.fullscreenElement)document.documentElement.requestFullscreen();
@@ -1436,6 +1990,7 @@ renderCalendar();
 updateCalToday();
 renderAlarms();
 renderTZ();
+renderSpanPresets();
 // Apply lang (sets all text)
 setLang(currentLang);
 update();

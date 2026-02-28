@@ -1,2006 +1,1731 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="sv">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Time App">
-<meta name="theme-color" content="#21273c">
-<title>Time App</title>
-<style>
-:root{
-  --bg:#21273c;--bg2:#2a3150;--border:#3a4468;--border2:#2f3a58;
-  --text:#e0e0ff;--text-dim:#6670a0;--text-mid:#7880b0;
-  --accent:#aaaaff;--accent2:#55ff88;--accent3:#ffaa55;--accent4:#6666cc;
-  --tick:#6666cc;--tick-min:#3a4468;--num:#8888cc;
-  --face:#1a2035;--face-ring:#3a4468;--center:#e0e0ff;
-  --info-span:#8888cc;--conv-res:#55ff88;--conv-hint:#4a5070;
-  --alarm-ring:#ff6666;--alarm-bg:#2d1a1a;--alarm-bdr:#cc4444;--alarm-btn:#3a1a1a;
-  --hand-h:#aaaaff;--hand-m:#55ff88;
-  --inp-bg:#1a2035;--bar-bg:#2a3150;
-  --wd-bg:#2a2040;--wd-border:#6644aa;
-  --sw-acc:#55ffcc;--cd-acc:#ffcc55;--tz-acc:#ff88cc;
-  --evt-modal-bg:#1e2540;
-}
-[data-theme="light"]{
-  --bg:#f0f0f8;--bg2:#ffffff;--border:#ccccee;--border2:#ddddee;
-  --text:#111133;--text-dim:#7777aa;--text-mid:#8888bb;
-  --accent:#4444cc;--accent2:#228844;--accent3:#aa6600;--accent4:#6666cc;
-  --tick:#6666cc;--tick-min:#ccccee;--num:#7777bb;
-  --face:#f8f8ff;--face-ring:#9999cc;--center:#111133;
-  --info-span:#5555bb;--conv-res:#228844;--conv-hint:#aaaacc;
-  --alarm-ring:#cc2222;--alarm-bg:#fff0f0;--alarm-bdr:#cc4444;--alarm-btn:#ffe0e0;
-  --hand-h:#4444cc;--hand-m:#228844;
-  --inp-bg:#f0f0ff;--bar-bg:#e0e0f0;
-  --wd-bg:#f0e8ff;--wd-border:#9966cc;
-  --sw-acc:#008866;--cd-acc:#886600;--tz-acc:#aa2288;
-  --evt-modal-bg:#f0f0ff;
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{
-  background:var(--bg);color:var(--text);font-family:'Courier New',monospace;
-  min-height:100vh;display:flex;flex-direction:column;
-  align-items:center;padding:72px 16px 40px;transition:background .3s,color .3s;
-}
-body.alarm-flash{background:var(--alarm-bg)!important;}
-
-/* TOP BAR */
-.top-bar{
-  position:fixed;top:0;left:0;right:0;
-  display:flex;justify-content:space-between;align-items:center;
-  padding:10px 16px;z-index:100;
-  background:var(--bg);border-bottom:1px solid var(--border);
-}
-.tab-bar{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:8px;}
-.tab-btn{
-  padding:7px 14px;border:none;background:transparent;cursor:pointer;
-  font-family:'Courier New',monospace;font-size:.65rem;letter-spacing:.15em;
-  color:var(--text-dim);transition:background .2s,color .2s;
-}
-.tab-btn:first-child{border-radius:7px 0 0 7px;}
-.tab-btn:last-child{border-radius:0 7px 7px 0;}
-.tab-btn.active{background:var(--border);color:var(--accent);}
-.ctrl-group{display:flex;gap:6px;align-items:center;}
-.tg{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:6px;}
-.tb{
-  padding:5px 9px;cursor:pointer;color:var(--text-dim);border:none;background:transparent;
-  position:relative;font-family:'Courier New',monospace;font-size:.62rem;letter-spacing:.1em;
-  transition:background .2s,color .2s;
-}
-.tb:first-child{border-radius:5px 0 0 5px;}
-.tb:last-child{border-radius:0 5px 5px 0;}
-.tb.active{background:var(--border);color:var(--accent);}
-.tb:hover:not(.active){color:var(--text-mid);}
-.tb::after{
-  content:attr(data-tip);position:absolute;top:calc(100% + 8px);left:50%;transform:translateX(-50%);
-  background:var(--bg2);border:1px solid var(--border);color:var(--text);font-size:.58rem;
-  letter-spacing:.1em;padding:4px 8px;border-radius:4px;white-space:nowrap;
-  pointer-events:none;opacity:0;transition:opacity .15s;z-index:200;
-}
-.tb:hover::after{opacity:1;}
-
-/* PANES */
-.pane{display:none;flex-direction:column;align-items:center;gap:22px;width:100%;max-width:520px;}
-.pane.active{display:flex;animation:fadeIn .22s ease;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
-
-/* SUB-TABS for clock pane */
-.sub-tab-bar{
-  display:flex;flex-wrap:wrap;gap:4px;justify-content:center;width:100%;
-  background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:6px;
-}
-.stb{
-  padding:5px 11px;border:none;background:transparent;cursor:pointer;
-  font-family:'Courier New',monospace;font-size:.6rem;letter-spacing:.12em;
-  color:var(--text-dim);transition:background .2s,color .2s;border-radius:5px;
-}
-.stb.active{background:var(--border);color:var(--accent);}
-.stb:hover:not(.active){background:var(--border2);color:var(--text-mid);}
-.sub-pane{display:none;flex-direction:column;align-items:center;gap:16px;width:100%;}
-.sub-pane.active{display:flex;animation:fadeIn .18s ease;}
-
-/* CLOCK */
-h1{font-size:1rem;letter-spacing:.3em;color:var(--text-mid);text-transform:uppercase;}
-.clocks-row{display:flex;gap:40px;align-items:center;flex-wrap:wrap;justify-content:center;}
-.digital{text-align:center;}
-.time-display{font-size:clamp(2.5rem,8vw,5rem);letter-spacing:.05em;color:var(--accent);font-weight:bold;}
-.lbl{font-size:.7rem;letter-spacing:.25em;color:var(--text-mid);margin-top:4px;}
-.millis{font-size:1.2rem;color:var(--accent4);margin-top:4px;}
-.bars{width:280px;}
-.bar-row{margin-bottom:12px;}
-.bar-label{display:flex;justify-content:space-between;font-size:.65rem;color:var(--text-mid);letter-spacing:.15em;margin-bottom:4px;}
-.bar-bg{background:var(--bar-bg);border-radius:4px;height:6px;overflow:hidden;}
-.bar-fill{height:100%;border-radius:4px;transition:width .1s linear;}
-.bar-p{background:linear-gradient(90deg,#3333aa,var(--accent));}
-.bar-o{background:linear-gradient(90deg,#226622,var(--accent2));}
-
-.time-rows{width:100%;display:flex;flex-direction:column;gap:6px;}
-.time-row{display:flex;align-items:baseline;gap:10px;justify-content:center;}
-.tr-lbl{font-size:.58rem;letter-spacing:.2em;color:var(--text-dim);width:52px;text-align:right;flex-shrink:0;}
-.tr-time{font-size:1.7rem;letter-spacing:.06em;}
-.utc-row .tr-time{color:var(--accent2);}
-.solar-row .tr-time{color:var(--accent3);}
-.local-row .tr-time{font-size:1.1rem;color:var(--text-mid);}
-.tr-ms{font-size:.85rem;opacity:.6;}
-.tr-sub{font-size:.6rem;color:var(--text-dim);letter-spacing:.08em;align-self:center;}
-
-.epoch-box{
-  background:var(--bg2);border:1px solid var(--border);border-radius:8px;
-  padding:10px 20px;width:100%;text-align:center;
-}
-.epoch-lbl{font-size:.58rem;letter-spacing:.2em;color:var(--text-mid);display:block;margin-bottom:3px;}
-.epoch-val{font-size:1.3rem;color:var(--accent4);letter-spacing:.05em;font-weight:bold;}
-.epoch-unit{font-size:.58rem;color:var(--text-dim);display:block;margin-top:3px;letter-spacing:.1em;}
-
-.box{
-  background:var(--bg2);border:1px solid var(--border);border-radius:8px;
-  padding:14px 22px;width:100%;font-size:.7rem;color:var(--text-dim);
-  line-height:1.8;letter-spacing:.05em;transition:background .3s,border-color .3s;
-}
-.box.info{text-align:center;}
-.box span{color:var(--info-span);}
-.conv-title{font-size:.7rem;letter-spacing:.25em;color:var(--text-mid);text-align:center;margin-bottom:14px;}
-.conv-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.conv-row label{font-size:.65rem;letter-spacing:.1em;color:var(--text-mid);width:90px;flex-shrink:0;}
-.conv-row input,.srow input{
-  background:var(--inp-bg);border:1px solid var(--border);border-radius:4px;
-  color:var(--accent);font-family:'Courier New',monospace;font-size:.9rem;
-  padding:6px 10px;text-align:center;outline:none;
-}
-.conv-row input{width:110px;}
-.conv-row input:focus,.srow input:focus{border-color:var(--accent4);}
-.conv-res{font-size:1.4rem;color:var(--conv-res);letter-spacing:.05em;flex:1;}
-.conv-div{border:none;border-top:1px solid var(--border2);margin:12px 0;}
-.conv-hint{font-size:.6rem;color:var(--conv-hint);text-align:center;letter-spacing:.1em;}
-.copy-btn{
-  background:none;border:1px solid var(--border);border-radius:4px;
-  color:var(--text-dim);font-family:'Courier New',monospace;
-  font-size:.65rem;padding:4px 7px;cursor:pointer;flex-shrink:0;transition:color .2s,border-color .2s;
-}
-.copy-btn:hover{color:var(--accent);border-color:var(--accent4);}
-.copy-btn.copied{color:var(--accent2);border-color:var(--accent2);}
-
-/* SETTINGS */
-.srow{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
-.srow label{font-size:.65rem;letter-spacing:.1em;color:var(--text-mid);width:90px;flex-shrink:0;}
-.srow input{width:100px;}
-.geo-btn{
-  background:none;border:1px solid var(--border);border-radius:4px;
-  font-size:1rem;padding:4px 8px;cursor:pointer;transition:border-color .2s;
-}
-.geo-btn:hover{border-color:var(--accent4);}
-.s-info{font-size:.65rem;color:var(--accent3);letter-spacing:.1em;text-align:center;min-height:1.2em;margin-top:2px;}
-.s-note{font-size:.6rem;color:var(--text-dim);text-align:center;letter-spacing:.1em;margin-top:10px;border-top:1px solid var(--border2);padding-top:10px;}
-
-/* STOPWATCH */
-.sw-display{text-align:center;padding:10px 0;}
-.sw-time{font-size:clamp(2rem,7vw,3.8rem);color:var(--sw-acc);font-weight:bold;letter-spacing:.05em;}
-.sw-ms{font-size:1.3rem;color:var(--sw-acc);opacity:.6;}
-.sw-real{font-size:.85rem;color:var(--text-dim);letter-spacing:.15em;margin-top:4px;}
-.sw-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
-.sw-btn{
-  padding:8px 22px;border:1px solid var(--border);border-radius:5px;
-  background:var(--bg);color:var(--text-mid);font-family:'Courier New',monospace;
-  font-size:.7rem;letter-spacing:.15em;cursor:pointer;transition:all .2s;
-}
-.sw-btn:hover{border-color:var(--sw-acc);color:var(--sw-acc);}
-.sw-btn.active{border-color:var(--sw-acc);color:var(--sw-acc);background:rgba(85,255,204,.08);}
-.sw-btn.danger:hover{border-color:var(--alarm-ring);color:var(--alarm-ring);}
-.laps-list{width:100%;max-height:180px;overflow-y:auto;font-size:.7rem;}
-.lap-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border2);color:var(--text-dim);}
-.lap-row:last-child{border-bottom:none;}
-.lap-num{color:var(--text-mid);width:36px;}
-.lap-pt{color:var(--sw-acc);font-size:.85rem;}
-.lap-real{color:var(--text-dim);font-size:.68rem;}
-
-/* COUNTDOWN TIMER */
-.cd-display{text-align:center;padding:10px 0;}
-.cd-time{font-size:clamp(2rem,7vw,3.8rem);color:var(--cd-acc);font-weight:bold;letter-spacing:.05em;}
-.cd-ms{font-size:1.3rem;color:var(--cd-acc);opacity:.6;}
-.cd-status{font-size:.75rem;text-align:center;color:var(--text-dim);letter-spacing:.15em;margin-top:4px;min-height:1.1em;}
-.cd-status.done{color:var(--alarm-ring);animation:blink .5s step-end infinite;}
-.cd-input-row{display:flex;gap:10px;align-items:center;justify-content:center;flex-wrap:wrap;}
-.cd-input-row label{font-size:.65rem;letter-spacing:.1em;color:var(--text-mid);}
-.cd-input{
-  background:var(--inp-bg);border:1px solid var(--border);border-radius:4px;
-  color:var(--cd-acc);font-family:'Courier New',monospace;font-size:.95rem;
-  padding:7px 12px;width:90px;text-align:center;outline:none;
-}
-.cd-input:focus{border-color:var(--cd-acc);}
-.cd-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
-.cd-btn{
-  padding:8px 22px;border:1px solid var(--border);border-radius:5px;
-  background:var(--bg);color:var(--text-mid);font-family:'Courier New',monospace;
-  font-size:.7rem;letter-spacing:.15em;cursor:pointer;transition:all .2s;
-}
-.cd-btn:hover{border-color:var(--cd-acc);color:var(--cd-acc);}
-.cd-btn.active{border-color:var(--cd-acc);color:var(--cd-acc);background:rgba(255,204,85,.08);}
-.cd-btn.danger:hover{border-color:var(--alarm-ring);color:var(--alarm-ring);}
-.cd-presets{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
-.cd-preset{
-  padding:4px 10px;border:1px solid var(--border2);border-radius:4px;
-  background:transparent;color:var(--text-dim);font-family:'Courier New',monospace;
-  font-size:.6rem;letter-spacing:.1em;cursor:pointer;transition:all .15s;
-}
-.cd-preset:hover{border-color:var(--cd-acc);color:var(--cd-acc);}
-
-/* ALARMS */
-.alarms-container{width:100%;display:flex;flex-direction:column;gap:8px;}
-.alarm-item{
-  display:flex;align-items:center;gap:6px;background:var(--bg);
-  border:1px solid var(--border2);border-radius:6px;padding:8px 10px;
-  flex-wrap:wrap;
-}
-.alarm-item.ringing{border-color:var(--alarm-bdr);background:var(--alarm-bg);}
-.alarm-time-inp{
-  background:var(--inp-bg);border:1px solid var(--border);border-radius:4px;
-  color:var(--accent);font-family:'Courier New',monospace;font-size:.9rem;
-  padding:5px 8px;width:76px;text-align:center;outline:none;
-}
-.alarm-time-inp:focus{border-color:var(--accent4);}
-.alarm-time-inp:disabled{opacity:.5;}
-.alarm-label-inp{
-  background:var(--inp-bg);border:1px solid var(--border);border-radius:4px;
-  color:var(--text-mid);font-family:'Courier New',monospace;font-size:.7rem;
-  padding:5px 8px;flex:1;min-width:80px;outline:none;
-}
-.alarm-label-inp:disabled{opacity:.5;}
-.alarm-toggle-btn{
-  padding:5px 12px;border-radius:4px;border:1px solid var(--border);
-  background:var(--inp-bg);color:var(--text-dim);font-family:'Courier New',monospace;
-  font-size:.65rem;letter-spacing:.12em;cursor:pointer;transition:all .2s;flex-shrink:0;
-}
-.alarm-toggle-btn.on{border-color:var(--alarm-bdr);color:var(--alarm-ring);background:var(--alarm-btn);}
-.alarm-remove-btn{
-  background:none;border:1px solid var(--border2);border-radius:4px;
-  color:var(--text-dim);font-family:'Courier New',monospace;
-  font-size:.9rem;padding:3px 8px;cursor:pointer;flex-shrink:0;transition:all .2s;
-}
-.alarm-remove-btn:hover{border-color:var(--alarm-ring);color:var(--alarm-ring);}
-.alarm-ring-bar{
-  width:100%;display:flex;align-items:center;gap:8px;margin-top:4px;
-  padding-top:6px;border-top:1px solid var(--alarm-bdr);
-}
-.alarm-ring-txt{font-size:.7rem;color:var(--alarm-ring);letter-spacing:.1em;flex:1;animation:blink .5s step-end infinite;}
-.alarm-dismiss-btn{
-  padding:4px 12px;border:1px solid var(--alarm-bdr);border-radius:4px;
-  background:var(--alarm-btn);color:var(--alarm-ring);font-family:'Courier New',monospace;
-  font-size:.65rem;letter-spacing:.1em;cursor:pointer;
-}
-.add-alarm-btn{
-  padding:8px;border:1px dashed var(--border);border-radius:6px;
-  background:transparent;color:var(--text-dim);font-family:'Courier New',monospace;
-  font-size:.65rem;letter-spacing:.15em;cursor:pointer;width:100%;transition:all .2s;
-}
-.add-alarm-btn:hover{border-color:var(--accent);color:var(--accent);}
-.alarm-err{font-size:.65rem;color:var(--alarm-ring);text-align:center;min-height:1.2em;letter-spacing:.1em;}
-@keyframes blink{50%{opacity:0;}}
-
-/* TIMEZONE COMPARATOR */
-.tz-list{width:100%;display:flex;flex-direction:column;gap:6px;}
-.tz-row{
-  display:flex;align-items:center;gap:8px;background:var(--bg);
-  border:1px solid var(--border2);border-radius:6px;padding:8px 12px;
-}
-.tz-name{font-size:.75rem;color:var(--text-mid);letter-spacing:.08em;flex:1;min-width:80px;}
-.tz-offset{font-size:.6rem;color:var(--text-dim);letter-spacing:.08em;width:52px;flex-shrink:0;}
-.tz-time{font-size:1.2rem;color:var(--tz-acc);letter-spacing:.06em;flex-shrink:0;min-width:80px;text-align:right;}
-.tz-pt{font-size:.65rem;color:var(--accent4);letter-spacing:.05em;text-align:right;min-width:50px;flex-shrink:0;}
-.tz-remove-btn{
-  background:none;border:1px solid var(--border2);border-radius:4px;
-  color:var(--text-dim);font-family:'Courier New',monospace;
-  font-size:.9rem;padding:2px 7px;cursor:pointer;flex-shrink:0;transition:all .2s;
-}
-.tz-remove-btn:hover{border-color:var(--alarm-ring);color:var(--alarm-ring);}
-.tz-add-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.tz-select{
-  background:var(--inp-bg);border:1px solid var(--border);border-radius:4px;
-  color:var(--text-mid);font-family:'Courier New',monospace;font-size:.7rem;
-  padding:6px 8px;flex:1;min-width:120px;outline:none;cursor:pointer;
-}
-.tz-add-btn{
-  padding:6px 14px;border:1px solid var(--border);border-radius:4px;
-  background:var(--bg);color:var(--text-mid);font-family:'Courier New',monospace;
-  font-size:.65rem;letter-spacing:.12em;cursor:pointer;transition:all .2s;flex-shrink:0;
-}
-.tz-add-btn:hover{border-color:var(--tz-acc);color:var(--tz-acc);}
-.tz-custom-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--border2);padding-top:8px;margin-top:4px;}
-.tz-custom-inp{
-  background:var(--inp-bg);border:1px solid var(--border);border-radius:4px;
-  color:var(--accent);font-family:'Courier New',monospace;font-size:.85rem;
-  padding:5px 8px;width:100px;text-align:center;outline:none;
-}
-.tz-custom-name{
-  background:var(--inp-bg);border:1px solid var(--border);border-radius:4px;
-  color:var(--text-mid);font-family:'Courier New',monospace;font-size:.75rem;
-  padding:5px 8px;flex:1;min-width:80px;outline:none;
-}
-.tz-header{display:grid;grid-template-columns:1fr 52px 80px 50px 28px;gap:8px;
-  font-size:.55rem;color:var(--text-dim);letter-spacing:.12em;padding:0 12px 4px;
-}
-
-/* DURATION CALCULATOR */
-.span-inp{
-  background:var(--inp-bg);border:1px solid var(--border);border-radius:4px;
-  color:var(--accent);font-family:'Courier New',monospace;font-size:1.1rem;
-  padding:7px 0;width:68px;text-align:center;outline:none;transition:border-color .2s;
-  -moz-appearance:textfield;
-}
-.span-inp-pt{color:var(--accent4);}
-.span-inp::-webkit-outer-spin-button,.span-inp::-webkit-inner-spin-button{-webkit-appearance:none;}
-.span-inp:focus{border-color:var(--accent4);}
-.span-sep{font-size:1.4rem;color:var(--text-dim);padding-bottom:8px;}
-.span-preset{
-  padding:4px 10px;border:1px solid var(--border2);border-radius:4px;
-  background:transparent;color:var(--text-dim);font-family:'Courier New',monospace;
-  font-size:.6rem;letter-spacing:.1em;cursor:pointer;transition:all .15s;
-}
-.span-preset:hover{border-color:var(--accent);color:var(--accent);}
-.span-dir-label{font-size:.6rem;letter-spacing:.2em;color:var(--text-dim);text-align:center;margin-bottom:12px;}
-.span-res-big{font-size:clamp(1.6rem,5vw,2.4rem);color:var(--accent);font-weight:bold;letter-spacing:.05em;}
-.span-res-sub{font-size:.8rem;color:var(--text-mid);letter-spacing:.12em;margin-top:4px;}
-.span-breakdown{
-  display:grid;grid-template-columns:1fr 1fr;gap:6px;
-  border-top:1px solid var(--border2);padding-top:12px;margin-top:4px;
-}
-.span-bd-item{
-  background:var(--bg);border:1px solid var(--border2);border-radius:6px;
-  padding:8px 10px;text-align:center;
-}
-.span-bd-val{font-size:1.1rem;color:var(--info-span);font-weight:bold;letter-spacing:.04em;}
-.span-bd-lbl{font-size:.55rem;color:var(--text-dim);letter-spacing:.12em;margin-top:3px;}
-
-/* RANGE CALCULATOR */
-.rng-row{display:flex;align-items:flex-end;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
-.rng-lbl{font-size:.58rem;letter-spacing:.15em;color:var(--text-mid);display:block;margin-bottom:4px;}
-.rng-inp{
-  background:var(--inp-bg);border:1px solid var(--border);border-radius:4px;
-  color:var(--accent);font-family:'Courier New',monospace;font-size:.95rem;
-  padding:7px 8px;width:88px;text-align:center;outline:none;transition:border-color .2s;
-}
-.rng-inp-pt{color:var(--accent4);}
-.rng-inp:focus{border-color:var(--accent4);}
-.rng-arrow{font-size:1.1rem;color:var(--text-dim);padding-bottom:6px;flex-shrink:0;}
-.rng-overnight-row{display:flex;justify-content:center;margin-bottom:10px;}
-.rng-overnight-lbl{font-size:.62rem;color:var(--text-dim);letter-spacing:.08em;cursor:pointer;display:flex;align-items:center;}
-.rng-result-box{text-align:center;padding:8px 0 6px;}
-.rng-res-main{font-size:clamp(1.4rem,4.5vw,2.1rem);color:var(--accent);font-weight:bold;letter-spacing:.05em;}
-.rng-res-sub{font-size:.8rem;color:var(--text-mid);letter-spacing:.12em;margin-top:4px;}
-.rng-hint{text-align:center;font-size:.65rem;color:var(--conv-hint);letter-spacing:.12em;padding:8px 0;}
-.tz-mode-btn{
-  padding:3px 10px;border:1px solid var(--border);border-radius:4px;
-  background:var(--bg);color:var(--text-dim);font-family:'Courier New',monospace;
-  font-size:.6rem;letter-spacing:.15em;cursor:pointer;transition:all .2s;flex-shrink:0;
-}
-.tz-mode-btn:hover{border-color:var(--accent3);color:var(--accent3);}
-.tz-mode-btn.local{border-color:var(--accent3);color:var(--accent3);background:rgba(255,170,85,.08);}
-
-.rng-endpoints{
-  display:flex;flex-direction:column;gap:5px;
-  border-bottom:1px solid var(--border2);padding-bottom:10px;margin-bottom:6px;
-}
-.rng-ep-row{
-  display:flex;align-items:center;gap:8px;font-size:.7rem;
-}
-.rng-ep-tag{
-  font-size:.55rem;letter-spacing:.15em;color:var(--text-dim);
-  width:32px;flex-shrink:0;text-align:right;
-}
-.rng-ep-real{color:var(--accent);font-size:.85rem;min-width:72px;}
-.rng-ep-arrow{color:var(--text-dim);font-size:.75rem;flex-shrink:0;}
-.rng-ep-pt{color:var(--accent4);font-size:.85rem;}
-background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:18px 22px;width:100%;text-align:center;}
-.ct-month{font-size:.7rem;letter-spacing:.3em;color:var(--text-mid);margin-bottom:4px;}
-.ct-day{font-size:3.5rem;font-weight:bold;color:var(--accent);line-height:1;}
-.ct-year{font-size:1rem;color:var(--text-mid);margin-top:2px;}
-.ct-wd{font-size:.7rem;letter-spacing:.2em;color:var(--accent2);margin-top:6px;}
-.ct-greg{font-size:.7rem;color:var(--text-dim);margin-top:4px;}
-.cal-live{font-size:1.2rem;color:var(--accent4);margin-top:8px;letter-spacing:.1em;}
-.cal-live-ms{font-size:.8rem;opacity:.6;}
-.cal-nav{display:flex;align-items:center;justify-content:space-between;width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;}
-.cal-nav-btn{background:none;border:1px solid var(--border);border-radius:4px;color:var(--accent);font-family:'Courier New',monospace;font-size:.9rem;padding:4px 12px;cursor:pointer;transition:background .2s;}
-.cal-nav-btn:hover{background:var(--border);}
-.cal-nav-center{display:flex;flex-direction:column;align-items:center;gap:5px;}
-.cal-nav-title{font-size:.85rem;letter-spacing:.2em;color:var(--text);text-align:center;}
-.cal-nav-year{font-size:.65rem;color:var(--text-mid);letter-spacing:.15em;text-align:center;}
-.today-btn{
-  padding:3px 10px;border:1px solid var(--accent4);border-radius:4px;
-  background:transparent;color:var(--accent4);font-family:'Courier New',monospace;
-  font-size:.58rem;letter-spacing:.12em;cursor:pointer;transition:all .2s;
-}
-.today-btn:hover{background:var(--accent4);color:var(--bg);}
-.cal-view-toggle{display:flex;gap:8px;justify-content:flex-end;width:100%;}
-.cvbtn{padding:5px 14px;border:1px solid var(--border);border-radius:5px;background:var(--bg2);color:var(--text-dim);font-family:'Courier New',monospace;font-size:.65rem;letter-spacing:.15em;cursor:pointer;transition:all .2s;}
-.cvbtn.active{background:var(--border);color:var(--accent);border-color:var(--accent4);}
-.cal-weekdays{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px;}
-.cal-wd-cell{text-align:center;font-size:.6rem;letter-spacing:.1em;color:var(--text-mid);padding:4px 0;font-weight:bold;}
-.cal-wd-cell.weekend{color:var(--accent3);}
-.cal-weeks{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;}
-.cal-cell{
-  background:var(--bg2);border:1px solid var(--border2);border-radius:6px;
-  padding:5px 3px;text-align:center;aspect-ratio:1;display:flex;flex-direction:column;
-  align-items:center;justify-content:flex-start;transition:background .2s;cursor:pointer;
-  position:relative;min-height:44px;
-}
-.cal-cell:hover{background:var(--border);}
-.cal-cell.today{background:var(--border);border-color:var(--accent);box-shadow:0 0 8px var(--accent)44;}
-.cal-cell.today .cal-day-num{color:var(--accent);}
-.cal-cell.weekend .cal-day-num{color:var(--accent3);}
-.cal-day-num{font-size:.9rem;font-weight:bold;color:var(--text);line-height:1.1;}
-.cal-day-greg{font-size:.45rem;color:var(--text-dim);margin-top:1px;}
-.cal-day-wd{font-size:.45rem;color:var(--text-dim);letter-spacing:.03em;}
-.cal-evt-dots{display:flex;flex-wrap:wrap;gap:2px;justify-content:center;margin-top:2px;}
-.cal-evt-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
-.wd-card{background:var(--wd-bg);border:1px solid var(--wd-border);border-radius:12px;padding:28px 22px;width:100%;text-align:center;grid-column:1/-1;}
-.wd-icon{font-size:3rem;margin-bottom:12px;}
-.wd-title{font-size:1.2rem;letter-spacing:.3em;color:var(--accent);margin-bottom:8px;}
-.wd-year{font-size:2rem;font-weight:bold;color:var(--text);}
-.wd-greg{font-size:.75rem;color:var(--text-dim);margin-top:8px;letter-spacing:.1em;}
-.wd-desc{font-size:.7rem;color:var(--text-mid);margin-top:16px;line-height:1.8;max-width:320px;margin-left:auto;margin-right:auto;}
-.wd-dates-box{margin-top:20px;border:1px solid var(--wd-border);border-radius:8px;padding:12px 20px;display:inline-flex;flex-direction:column;gap:8px;min-width:220px;}
-.wd-dates-row{display:flex;align-items:center;gap:10px;font-size:.75rem;}
-.wd-dates-icon{font-size:1rem;}
-.wd-dates-label{color:var(--text-mid);letter-spacing:.1em;flex:1;text-align:left;}
-.wd-dates-val{color:var(--accent);font-weight:bold;}
-.wd-dates-note{font-size:.65rem;color:var(--text-dim);letter-spacing:.1em;text-align:center;margin-top:4px;}
-.cal-year-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(138px,1fr));gap:10px;width:100%;}
-.cal-yr-month{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 8px;cursor:pointer;transition:border-color .2s,background .2s;}
-.cal-yr-month:hover{border-color:var(--accent4);background:var(--border);}
-.cal-yr-month.has-today{border-color:var(--accent);box-shadow:0 0 8px var(--accent)33;}
-.cal-yr-name{font-size:.6rem;letter-spacing:.15em;color:var(--text-mid);text-align:center;margin-bottom:6px;}
-.cal-yr-month.has-today .cal-yr-name{color:var(--accent);}
-.cal-yr-mini{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
-.cal-yr-cell{aspect-ratio:1;border-radius:3px;font-size:.48rem;display:flex;align-items:center;justify-content:center;color:var(--text-dim);}
-.cal-yr-cell.hdr{color:var(--text-mid);font-size:.42rem;}
-.cal-yr-cell.wknd{color:var(--accent3);}
-.cal-yr-cell.today-dot{background:var(--accent);color:#fff;border-radius:50%;font-weight:bold;}
-.cal-yr-cell.has-evt{background:var(--border2);}
-.cal-yr-special{background:var(--wd-bg);border:1px solid var(--wd-border);border-radius:8px;padding:10px 8px;cursor:pointer;transition:border-color .2s;text-align:center;}
-.cal-yr-special:hover{border-color:var(--accent);}
-.cal-yr-s-icon{font-size:1.4rem;}
-.cal-yr-s-name{font-size:.58rem;letter-spacing:.1em;color:var(--info-span);margin-top:4px;}
-.cal-yr-s-greg{font-size:.54rem;color:var(--text-dim);margin-top:3px;}
-.cal-info{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:14px 22px;width:100%;font-size:.7rem;color:var(--text-dim);line-height:1.9;text-align:center;}
-.cal-info span{color:var(--info-span);}
-
-/* EVENT MODAL */
-.evt-modal-overlay{
-  display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:500;
-  align-items:center;justify-content:center;padding:20px;
-}
-.evt-modal-overlay.open{display:flex;animation:fadeIn .15s ease;}
-.evt-modal{
-  background:var(--evt-modal-bg);border:1px solid var(--border);border-radius:12px;
-  padding:20px;width:100%;max-width:420px;max-height:80vh;overflow-y:auto;
-}
-.evt-modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
-.evt-modal-title{font-size:.75rem;letter-spacing:.2em;color:var(--accent);font-weight:bold;}
-.evt-modal-close{
-  background:none;border:1px solid var(--border);border-radius:4px;
-  color:var(--text-dim);font-family:'Courier New',monospace;
-  font-size:.9rem;padding:2px 8px;cursor:pointer;transition:all .2s;
-}
-.evt-modal-close:hover{color:var(--alarm-ring);border-color:var(--alarm-ring);}
-.evt-item{display:flex;align-items:center;gap:6px;margin-bottom:8px;flex-wrap:wrap;}
-.evt-color-row{display:flex;gap:5px;align-items:center;}
-.evt-color-dot{
-  width:16px;height:16px;border-radius:50%;cursor:pointer;
-  border:2px solid transparent;transition:transform .15s,border-color .15s;flex-shrink:0;
-}
-.evt-color-dot.sel{border-color:#fff;transform:scale(1.2);}
-.evt-color-dot:hover{transform:scale(1.15);}
-.evt-text-inp{
-  flex:1;min-width:120px;background:var(--inp-bg);border:2px solid var(--border);border-radius:4px;
-  color:var(--text);font-family:'Courier New',monospace;font-size:.8rem;
-  padding:6px 8px;outline:none;transition:border-color .2s;
-}
-.evt-del-btn{
-  background:none;border:1px solid var(--border2);border-radius:4px;
-  color:var(--text-dim);font-family:'Courier New',monospace;
-  font-size:.9rem;padding:3px 8px;cursor:pointer;transition:all .2s;flex-shrink:0;
-}
-.evt-del-btn:hover{border-color:var(--alarm-ring);color:var(--alarm-ring);}
-.evt-add-item-btn{
-  padding:7px;border:1px dashed var(--border);border-radius:5px;
-  background:transparent;color:var(--text-dim);font-family:'Courier New',monospace;
-  font-size:.65rem;letter-spacing:.12em;cursor:pointer;width:100%;transition:all .2s;margin-bottom:10px;
-}
-.evt-add-item-btn:hover{border-color:var(--accent2);color:var(--accent2);}
-.evt-modal-footer{display:flex;gap:8px;justify-content:flex-end;border-top:1px solid var(--border2);padding-top:12px;margin-top:4px;}
-.evt-save-btn,.evt-cancel-btn{
-  padding:7px 18px;border-radius:5px;font-family:'Courier New',monospace;
-  font-size:.65rem;letter-spacing:.12em;cursor:pointer;transition:all .2s;
-}
-.evt-save-btn{border:1px solid var(--accent2);color:var(--accent2);background:rgba(85,255,136,.08);}
-.evt-save-btn:hover{background:rgba(85,255,136,.2);}
-.evt-cancel-btn{border:1px solid var(--border);color:var(--text-dim);background:transparent;}
-.evt-cancel-btn:hover{border-color:var(--text-mid);color:var(--text-mid);}
-
-/* Mobile tweaks */
-@media(max-width:480px){
-  body{padding:72px 12px 32px;}
-  .clocks-row{gap:20px;}
-  .pane{gap:16px;}
-  .box{padding:12px 14px;}
-  .cal-cell{padding:3px 2px;min-height:38px;}
-  .cal-day-num{font-size:.8rem;}
-  .top-bar{padding:8px 10px;}
-  .tab-btn{padding:6px 10px;font-size:.6rem;}
-  .tb{padding:5px 7px;font-size:.58rem;}
-  .tz-row{flex-wrap:wrap;}
-  .tz-time{min-width:70px;}
-  .stb{padding:4px 8px;font-size:.58rem;}
-}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SPCS Bokföring (HTML) – v2</title>
+  <style>
+    :root{
+      --bg:#21273c;
+      --panel:#2a3150;
+      --panel2:#1b2033;
+      --text:#e8ecff;
+      --muted:#b8c0ff;
+      --accent:#7aa2ff;
+      --danger:#ff6b6b;
+      --ok:#5dffb3;
+      --border:rgba(255,255,255,.12);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background:linear-gradient(180deg, var(--bg), #14182a 65%);
+      color:var(--text);
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      background:rgba(33,39,60,.85);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid var(--border);
+    }
+    .wrap{max-width:1250px;margin:0 auto;padding:16px}
+    h1{font-size:18px;margin:0 0 6px}
+    .sub{color:var(--muted);font-size:13px}
+    nav{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    nav button{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:10px;
+      cursor:pointer;
+    }
+    nav button.active{
+      background:rgba(122,162,255,.18);
+      border-color:rgba(122,162,255,.45);
+    }
+    main{padding:18px 0 40px}
+    .grid{display:grid;grid-template-columns: 1fr;gap:14px}
+    @media(min-width: 980px){
+      .grid.two{grid-template-columns: 1.1fr .9fr}
+      .grid.three{grid-template-columns: 1fr 1fr 1fr}
+    }
+    .card{
+      background:linear-gradient(180deg, rgba(42,49,80,.92), rgba(27,32,51,.92));
+      border:1px solid var(--border);
+      border-radius:14px;
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    .card h2{font-size:15px;margin:0 0 10px}
+    .row{display:flex;gap:10px;flex-wrap:wrap}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input, select, textarea{
+      width:100%;
+      padding:10px 10px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      outline:none;
+    }
+    textarea{min-height:90px; font-family:var(--mono); font-size:12px}
+    input[type="date"]{padding:9px 10px}
+    .btn{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.08);
+      color:var(--text);
+      padding:9px 11px;
+      border-radius:10px;
+      cursor:pointer;
+    }
+    .btn.primary{
+      background:rgba(122,162,255,.22);
+      border-color:rgba(122,162,255,.45);
+    }
+    .btn.danger{
+      background:rgba(255,107,107,.16);
+      border-color:rgba(255,107,107,.45);
+    }
+    .btn.ok{
+      background:rgba(93,255,179,.14);
+      border-color:rgba(93,255,179,.35);
+    }
+    .muted{color:var(--muted);font-size:12px}
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:6px 10px;border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid var(--border);
+      font-size:12px;color:var(--muted);
+    }
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th, td{padding:9px 8px;border-bottom:1px solid rgba(255,255,255,.08);vertical-align:top}
+    th{color:var(--muted);text-align:left;font-weight:600}
+    td.num{text-align:right;font-family:var(--mono)}
+    .right{margin-left:auto}
+    .err{color:var(--danger);font-size:12px}
+    .oktxt{color:var(--ok);font-size:12px}
+    .small{font-size:12px}
+    .mono{font-family:var(--mono)}
+    .split{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .sep{height:1px;background:rgba(255,255,255,.08);margin:12px 0}
+    .hidden{display:none !important}
+    .kv{display:grid;grid-template-columns: 170px 1fr;gap:8px 12px;font-size:13px}
+    .kv div:nth-child(odd){color:var(--muted)}
+    .footer-note{color:var(--muted);font-size:12px;margin-top:10px}
+    .badge{
+      display:inline-flex;align-items:center;gap:6px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.06);
+      padding:6px 10px;border-radius:999px;
+      font-size:12px;color:var(--muted);
+    }
+    .kbd{font-family:var(--mono);font-size:12px;border:1px solid rgba(255,255,255,.15);padding:2px 6px;border-radius:6px;background:rgba(255,255,255,.06)}
+    @media print{
+      header, nav, .no-print{display:none !important}
+      body{background:#fff;color:#000}
+      .card{box-shadow:none;border:1px solid #ccc;background:#fff}
+      .muted{color:#333}
+      table, th, td{border-bottom:1px solid #ddd}
+      .pill, .badge{border:1px solid #ccc;background:#fff;color:#000}
+    }
+  </style>
 </head>
 <body>
+<header>
+  <div class="wrap">
+    <div class="split">
+      <div>
+        <h1>SPCS Bokföring (HTML) – v2</h1>
+        <div class="sub">Offline • IndexedDB (primärt) + fallback • Periodlås • Logg • SIE import/export • Rapporter</div>
+      </div>
+      <div class="right pill" id="statusPill">Startar…</div>
+      <div class="pill" id="storagePill">Lagring: —</div>
+    </div>
 
-<div class="top-bar">
-  <div class="tab-bar">
-    <button class="tab-btn active" id="tab-clock"    onclick="showTab('clock')">⏱ <span id="tl-clock">CLOCK</span></button>
-    <button class="tab-btn"        id="tab-calendar" onclick="showTab('calendar')">📅 <span id="tl-cal">CALENDAR</span></button>
+    <nav id="tabs" class="no-print">
+      <button data-tab="start" class="active">Start</button>
+      <button data-tab="foretag">Företag</button>
+      <button data-tab="kontoplan">Kontoplan</button>
+      <button data-tab="verifikat">Verifikat</button>
+      <button data-tab="rapporter">Rapporter</button>
+      <button data-tab="importexport">Import/Export</button>
+      <button data-tab="logg">Logg</button>
+    </nav>
   </div>
-  <div class="ctrl-group">
-    <div class="tg"><button class="tb" id="btn-fs" data-tip="Fullscreen" onclick="toggleFS()">⛶</button></div>
-    <div class="tg">
-      <button class="tb" id="t-dark"   data-tip="Dark"   onclick="setTheme('dark')">◐</button>
-      <button class="tb active" id="t-system" data-tip="System" onclick="setTheme('system')">⊙</button>
-      <button class="tb" id="t-light"  data-tip="Light"  onclick="setTheme('light')">○</button>
-    </div>
-    <div class="tg">
-      <button class="tb active" id="btn-en" onclick="setLang('en')">EN</button>
-      <button class="tb"        id="btn-sv" onclick="setLang('sv')">SV</button>
-    </div>
-  </div>
-</div>
+</header>
 
-<!-- ══ CLOCK PANE ══ -->
-<div class="pane active" id="pane-clock">
-  <h1 id="title">Period Clock</h1>
-
-  <!-- Sub-tab bar -->
-  <div class="sub-tab-bar">
-    <button class="stb active" id="stb-time"     onclick="showSubTab('time')">⏱ <span class="stl" id="stl-time">TIME</span></button>
-    <button class="stb"        id="stb-stop"     onclick="showSubTab('stop')">⏸ <span class="stl" id="stl-stop">STOPWATCH</span></button>
-    <button class="stb"        id="stb-timer"    onclick="showSubTab('timer')">⏬ <span class="stl" id="stl-timer">TIMER</span></button>
-    <button class="stb"        id="stb-zones"    onclick="showSubTab('zones')">🌍 <span class="stl" id="stl-zones">ZONES</span></button>
-    <button class="stb"        id="stb-alarms"   onclick="showSubTab('alarms')">🔔 <span class="stl" id="stl-alarms">ALARMS</span></button>
-    <button class="stb"        id="stb-span"     onclick="showSubTab('span')">⟺ <span class="stl" id="stl-span">CONVERT</span></button>
-    <button class="stb"        id="stb-settings" onclick="showSubTab('settings')">⚙ <span class="stl" id="stl-settings">SETTINGS</span></button>
-  </div>
-
-  <!-- TIME sub-pane -->
-  <div class="sub-pane active" id="sp-time">
-    <div class="clocks-row">
-      <canvas id="analog" width="220" height="220"></canvas>
-      <div class="digital">
-        <div class="time-display" id="disp">00:00</div>
-        <div class="lbl" id="label-units">PERIOD : MOMENT</div>
-        <div class="millis" id="sub-moment">.000</div>
+<main class="wrap">
+  <section id="tab-start" class="grid two">
+    <div class="card">
+      <h2>Översikt</h2>
+      <div class="kv" id="overview"></div>
+      <div class="sep"></div>
+      <div class="row no-print">
+        <button class="btn primary" id="btnPrefill">Skapa BAS-minimal kontoplan</button>
+        <button class="btn" id="btnDemo">Skapa demo-verifikat</button>
+        <button class="btn danger" id="btnReset">Nollställ allt (radera data)</button>
       </div>
-    </div>
-    <div class="bars">
-      <div class="bar-row">
-        <div class="bar-label"><span id="lbl-p">PERIOD</span><span id="bp-val">0 / 100</span></div>
-        <div class="bar-bg"><div class="bar-fill bar-p" id="bp"></div></div>
+      <div class="footer-note">
+        Prototypen är ett fristående offline-system. För full SPCS-paritet krävs mer (reskontra, faktura, lön, avancerad moms, periodiseringar, mm).
       </div>
-      <div class="bar-row">
-        <div class="bar-label"><span id="lbl-o">MOMENT</span><span id="bo-val">0 / 100</span></div>
-        <div class="bar-bg"><div class="bar-fill bar-o" id="bo"></div></div>
-      </div>
-    </div>
-    <div class="time-rows">
-      <div class="time-row utc-row">
-        <span class="tr-lbl">UTC</span>
-        <span class="tr-time" id="tr-utc">00:00:00</span><span class="tr-ms" id="tr-utc-ms">.000</span>
-      </div>
-      <div class="time-row solar-row" id="solar-row" style="display:none">
-        <span class="tr-lbl" id="lbl-solar">SOLAR</span>
-        <span class="tr-time" id="tr-solar">—</span>
-        <span class="tr-sub" id="tr-solar-off"></span>
-      </div>
-      <div class="time-row local-row">
-        <span class="tr-lbl" id="lbl-local">LOCAL</span>
-        <span class="tr-time" id="tr-local">00:00:00</span>
-      </div>
-    </div>
-    <div class="epoch-box">
-      <span class="epoch-lbl" id="lbl-epoch">EPOCH</span>
-      <span class="epoch-val" id="epoch-val">0</span>
-      <span class="epoch-unit" id="epoch-unit">moments since J2000</span>
-    </div>
-    <div class="box info">
-      1 <span id="info-moment">moment</span> = <span>8.64 <span id="info-rs">real seconds</span></span><br>
-      1 <span id="info-period">period</span> = <span>864 <span id="info-rs2">real seconds</span> (14 <span id="info-min">min</span> 24 <span id="info-sec">sec</span>)</span><br>
-      <span id="info-day">Day: 100 periods × 100 moments = 10 000 moments</span>
-    </div>
-  </div>
-
-  <!-- STOPWATCH sub-pane -->
-  <div class="sub-pane" id="sp-stop">
-    <div class="box" style="width:100%">
-      <div class="conv-title" id="sw-title">STOPWATCH</div>
-      <div class="sw-display">
-        <div class="sw-time"><span id="sw-disp">00:00</span><span class="sw-ms" id="sw-ms">.000</span></div>
-        <div class="sw-real" id="sw-real">00:00:00</div>
-        <div class="lbl" id="sw-label-units" style="margin-top:8px">PERIOD : MOMENT</div>
-      </div>
-      <div class="sw-btns" style="margin-top:14px">
-        <button class="sw-btn" id="sw-start-btn" onclick="swToggle()">START</button>
-        <button class="sw-btn" id="sw-lap-btn" onclick="swLap()">LAP</button>
-        <button class="sw-btn danger" onclick="swReset()">RESET</button>
-      </div>
-      <div id="laps-list" class="laps-list" style="margin-top:14px"></div>
-    </div>
-  </div>
-
-  <!-- COUNTDOWN TIMER sub-pane -->
-  <div class="sub-pane" id="sp-timer">
-    <div class="box" style="width:100%">
-      <div class="conv-title" id="cd-title">COUNTDOWN TIMER</div>
-      <div class="cd-display">
-        <div class="cd-time"><span id="cd-disp">00:00</span><span class="cd-ms" id="cd-ms">.000</span></div>
-        <div class="lbl" id="cd-label-units" style="margin-top:6px">PERIOD : MOMENT</div>
-        <div class="cd-status" id="cd-status"></div>
-      </div>
-      <div class="cd-input-row" style="margin-top:14px">
-        <label id="cd-inp-lbl">DURATION PP:OO</label>
-        <input class="cd-input" id="cd-input" type="text" placeholder="10:00" maxlength="5"/>
-      </div>
-      <div class="cd-presets" style="margin-top:10px" id="cd-presets-row">
-        <button class="cd-preset" onclick="cdPreset('01:00')">1m</button>
-        <button class="cd-preset" onclick="cdPreset('05:00')">5m</button>
-        <button class="cd-preset" onclick="cdPreset('10:00')">10m</button>
-        <button class="cd-preset" onclick="cdPreset('25:00')">25m</button>
-        <button class="cd-preset" onclick="cdPreset('50:00')">50m</button>
-        <button class="cd-preset" onclick="cdPreset('99:99')">MAX</button>
-      </div>
-      <div class="cd-btns" style="margin-top:12px">
-        <button class="cd-btn" id="cd-start-btn" onclick="cdToggle()">START</button>
-        <button class="cd-btn danger" onclick="cdReset()">RESET</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- TIMEZONE COMPARATOR sub-pane -->
-  <div class="sub-pane" id="sp-zones">
-    <div class="box" style="width:100%">
-      <div class="conv-title" id="tz-title">TIMEZONE COMPARATOR</div>
-      <div class="tz-header" id="tz-header">
-        <span id="tzh-city">CITY</span><span id="tzh-utc">UTC</span><span id="tzh-time">TIME</span><span id="tzh-pt">P.TIME</span><span></span>
-      </div>
-      <div class="tz-list" id="tz-list"></div>
-      <div class="tz-add-row" style="margin-top:10px">
-        <select class="tz-select" id="tz-select"></select>
-        <button class="tz-add-btn" onclick="addTZPreset()" id="tz-add-btn">+ ADD</button>
-      </div>
-      <div class="tz-custom-row">
-        <input class="tz-custom-name" id="tz-cust-name" type="text" placeholder="Custom name" maxlength="16"/>
-        <input class="tz-custom-inp" id="tz-cust-offset" type="number" min="-12" max="14" step="0.5" placeholder="UTC+0"/>
-        <button class="tz-add-btn" onclick="addTZCustom()" id="tz-cust-btn">+ ADD</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ALARMS sub-pane -->
-  <div class="sub-pane" id="sp-alarms">
-    <div class="box" style="width:100%">
-      <div class="conv-title" id="alarms-title">ALARMS</div>
-      <div class="alarm-err" id="alarm-err"></div>
-      <div class="alarms-container" id="alarms-container"></div>
-    </div>
-  </div>
-
-  <!-- DURATION/SPAN sub-pane -->
-  <div class="sub-pane" id="sp-span">
-
-    <!-- ── Clock-time converter ── -->
-    <div class="box" style="width:100%">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-        <div class="conv-title" id="conv-title" style="margin-bottom:0">TIME CONVERTER</div>
-        <button class="tz-mode-btn" id="conv-tz-btn" onclick="toggleConvTZ()">UTC</button>
-      </div>
-      <div class="conv-row">
-        <label id="lbl-real">REAL TIME</label>
-        <input id="real-input" type="text" placeholder="HH:MM:SS" maxlength="8"/>
-        <div class="conv-res" id="real-to-per">—</div>
-        <button class="copy-btn" id="copy-r" onclick="copyResult('real-to-per','copy-r')">⎘</button>
-      </div>
-      <hr class="conv-div">
-      <div class="conv-row">
-        <label id="lbl-per">PERIOD TIME</label>
-        <input id="per-input" type="text" placeholder="PP:OO" maxlength="5"/>
-        <div class="conv-res" id="per-to-real">—</div>
-        <button class="copy-btn" id="copy-p" onclick="copyResult('per-to-real','copy-p')">⎘</button>
-      </div>
-      <div class="conv-hint" id="conv-hint">Type a time and see the result instantly</div>
     </div>
 
-    <!-- ── Real → Period ── -->
-    <div class="box" style="width:100%">
-      <div class="conv-title" id="span-title">DURATION CONVERTER</div>
-      <div class="span-dir-label" id="span-dir-a"></div>
+    <div class="card">
+      <h2>Snabbkontroller</h2>
+      <div id="quickChecks" class="small muted">—</div>
+      <div class="sep"></div>
+      <div class="row no-print">
+        <button class="btn ok" id="btnBackupFile">Exportera JSON (fil)</button>
+        <button class="btn" id="btnSIEFile">Exportera SIE (fil)</button>
+        <button class="btn" id="btnPrintStart">Skriv ut</button>
+      </div>
+      <div class="sep"></div>
+      <div class="muted small">
+        Tips: <span class="kbd">Ctrl/Cmd + P</span> funkar för utskrifter av rapporter också.
+      </div>
+    </div>
+  </section>
 
-      <div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;margin-bottom:14px">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-          <label style="font-size:.58rem;letter-spacing:.15em;color:var(--text-mid)" id="span-lbl-h">HOURS</label>
-          <input id="span-h" class="span-inp" type="number" min="0" max="9999" step="1" placeholder="0" oninput="calcSpan()">
+  <section id="tab-foretag" class="hidden grid two">
+    <div class="card">
+      <h2>Företagsinställningar</h2>
+      <div class="row">
+        <div style="flex:1;min-width:240px">
+          <label>Företagsnamn</label>
+          <input id="cName" placeholder="Ex: Andreas AB" />
         </div>
-        <span class="span-sep">:</span>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-          <label style="font-size:.58rem;letter-spacing:.15em;color:var(--text-mid)" id="span-lbl-m">MIN</label>
-          <input id="span-m" class="span-inp" type="number" min="0" max="59" step="1" placeholder="0" oninput="calcSpan()">
+        <div style="flex:1;min-width:240px">
+          <label>Organisationsnummer</label>
+          <input id="cOrg" placeholder="Ex: 556123-4567" />
         </div>
-        <span class="span-sep">:</span>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-          <label style="font-size:.58rem;letter-spacing:.15em;color:var(--text-mid)" id="span-lbl-s">SEC</label>
-          <input id="span-s" class="span-inp" type="number" min="0" max="59" step="1" placeholder="0" oninput="calcSpan()">
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1;min-width:240px">
+          <label>Räkenskapsår – start</label>
+          <input id="fyStart" type="date" />
+        </div>
+        <div style="flex:1;min-width:240px">
+          <label>Räkenskapsår – slut</label>
+          <input id="fyEnd" type="date" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1;min-width:240px">
+          <label>Standard verifikationsserie</label>
+          <input id="defaultSeries" placeholder="A" />
+        </div>
+        <div style="flex:1;min-width:240px">
+          <label>Nästa verifikationsnummer (fallback)</label>
+          <input id="nextVoucher" type="number" min="1" />
         </div>
       </div>
 
-      <div id="span-presets" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:16px"></div>
+      <div class="sep"></div>
 
-      <div id="span-result" style="display:none">
-        <div style="text-align:center;padding:10px 0 6px">
-          <div class="span-res-big" id="span-res-main"></div>
-          <div class="span-res-sub" id="span-res-sub"></div>
+      <h2>Periodlås</h2>
+      <div class="row">
+        <div style="flex:1;min-width:240px">
+          <label>Lås bokföring t.o.m. (inklusive)</label>
+          <input id="lockUntil" type="date" />
         </div>
-        <div id="span-breakdown" class="span-breakdown"></div>
-      </div>
-      <div id="span-empty" style="text-align:center;font-size:.65rem;color:var(--conv-hint);letter-spacing:.12em;padding:10px 0"></div>
-    </div>
-
-    <!-- ── Period → Real ── -->
-    <div class="box" style="width:100%">
-      <div class="span-dir-label" id="span-dir-b"></div>
-
-      <div style="display:flex;gap:8px;align-items:flex-end;justify-content:center;flex-wrap:wrap;margin-bottom:14px">
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-          <label style="font-size:.58rem;letter-spacing:.15em;color:var(--text-mid)" id="span-lbl-pp">PERIODS</label>
-          <input id="span-pp" class="span-inp span-inp-pt" type="number" min="0" max="999999" step="1" placeholder="0" oninput="calcSpanRev()">
-        </div>
-        <span class="span-sep">:</span>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-          <label style="font-size:.58rem;letter-spacing:.15em;color:var(--text-mid)" id="span-lbl-oo">MOMENTS</label>
-          <input id="span-oo" class="span-inp span-inp-pt" type="number" min="0" max="99" step="1" placeholder="0" oninput="calcSpanRev()">
-        </div>
-        <span class="span-sep">.</span>
-        <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-          <label style="font-size:.58rem;letter-spacing:.15em;color:var(--text-mid)" id="span-lbl-sub">×0.001</label>
-          <input id="span-sub" class="span-inp span-inp-pt" type="number" min="0" max="999" step="1" placeholder="0" oninput="calcSpanRev()">
+        <div style="flex:1;min-width:240px">
+          <label>Info</label>
+          <div class="badge" id="lockInfo">—</div>
         </div>
       </div>
 
-      <div id="span-rev-result" style="display:none">
-        <div style="text-align:center;padding:10px 0 6px">
-          <div class="span-res-big" id="span-rev-main"></div>
-          <div class="span-res-sub" id="span-rev-sub"></div>
+      <div class="row" style="margin-top:12px">
+        <button class="btn primary" id="btnSaveCompany">Spara</button>
+        <button class="btn" id="btnUnlock">Lås upp (ta bort låsdatum)</button>
+      </div>
+      <div id="companyMsg" class="muted" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <h2>Moms-koder</h2>
+      <div class="muted small">
+        Konton kan ha moms-kod. Momsrapporten summerar moms-konton per kod.
+      </div>
+      <div class="sep"></div>
+      <div class="muted small mono">
+        NONE, OUT25, OUT12, OUT6, IN25, IN12, IN6
+      </div>
+      <div class="sep"></div>
+      <div class="muted small">
+        För “riktig” svensk momsrapport (rutor, EU-handel, omvänd moms, mm) behöver man fler koder och regler. Men den här ger snabb kontroll.
+      </div>
+    </div>
+  </section>
+
+  <section id="tab-kontoplan" class="hidden grid two">
+    <div class="card">
+      <h2>Lägg till / redigera konto</h2>
+      <div class="row">
+        <div style="flex:0.6;min-width:120px">
+          <label>Konto</label>
+          <input id="accNo" placeholder="1930" />
         </div>
-        <div id="span-rev-breakdown" class="span-breakdown"></div>
-      </div>
-      <div id="span-rev-empty" style="text-align:center;font-size:.65rem;color:var(--conv-hint);letter-spacing:.12em;padding:10px 0"></div>
-    </div>
-
-    <!-- ── Real timestamps → Period duration ── -->
-    <div class="box" style="width:100%">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
-        <div class="conv-title" id="rng-title-a" style="margin-bottom:0">TIME RANGE → PERIOD DURATION</div>
-        <button class="tz-mode-btn" id="rng-tz-btn" onclick="toggleRngTZ()">UTC</button>
-      </div>
-      <div class="rng-row">
-        <label class="rng-lbl" id="rng-lbl-from-a">FROM</label>
-        <input id="rng-a-from" class="rng-inp" type="text" placeholder="HH:MM:SS" maxlength="8" oninput="calcRange()">
-        <span class="rng-arrow">→</span>
-        <label class="rng-lbl" id="rng-lbl-to-a">TO</label>
-        <input id="rng-a-to"   class="rng-inp" type="text" placeholder="HH:MM:SS" maxlength="8" oninput="calcRange()">
-      </div>
-      <div class="rng-overnight-row">
-        <label class="rng-overnight-lbl" id="rng-overnight-lbl">
-          <input type="checkbox" id="rng-overnight" onchange="calcRange()" style="margin-right:5px">
-          <span id="rng-overnight-txt">Overnight (end is next day)</span>
-        </label>
-      </div>
-      <div id="rng-result" style="display:none">
-        <div class="rng-result-box">
-          <div class="rng-res-main" id="rng-res-main"></div>
-          <div class="rng-res-sub"  id="rng-res-sub"></div>
+        <div style="flex:1.4;min-width:240px">
+          <label>Namn</label>
+          <input id="accName" placeholder="Företagskonto" />
         </div>
-        <div id="rng-breakdown" class="span-breakdown"></div>
       </div>
-      <div id="rng-empty" class="rng-hint"></div>
-    </div>
-
-    <!-- ── Period timestamps → Real duration ── -->
-    <div class="box" style="width:100%">
-      <div class="conv-title" id="rng-title-b">PERIOD RANGE → REAL DURATION</div>
-      <div class="rng-row">
-        <label class="rng-lbl" id="rng-lbl-from-b">FROM</label>
-        <input id="rng-b-from" class="rng-inp rng-inp-pt" type="text" placeholder="PP:OO" maxlength="5" oninput="calcRangeRev()">
-        <span class="rng-arrow">→</span>
-        <label class="rng-lbl" id="rng-lbl-to-b">TO</label>
-        <input id="rng-b-to"   class="rng-inp rng-inp-pt" type="text" placeholder="PP:OO" maxlength="5" oninput="calcRangeRev()">
-      </div>
-      <div class="rng-overnight-row">
-        <label class="rng-overnight-lbl">
-          <input type="checkbox" id="rng-b-overnight" onchange="calcRangeRev()" style="margin-right:5px">
-          <span id="rng-b-overnight-txt">Overnight (end is next day)</span>
-        </label>
-      </div>
-      <div id="rng-rev-result" style="display:none">
-        <div class="rng-result-box">
-          <div class="rng-res-main" id="rng-rev-main"></div>
-          <div class="rng-res-sub"  id="rng-rev-sub"></div>
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1;min-width:220px">
+          <label>Typ</label>
+          <select id="accType">
+            <option value="asset">Tillgång</option>
+            <option value="liability">Skuld</option>
+            <option value="equity">Eget kapital</option>
+            <option value="revenue">Intäkt</option>
+            <option value="expense">Kostnad</option>
+          </select>
         </div>
-        <div id="rng-rev-breakdown" class="span-breakdown"></div>
+        <div style="flex:1;min-width:220px">
+          <label>Moms-kod</label>
+          <select id="accVAT">
+            <option value="NONE">NONE</option>
+            <option value="OUT25">OUT25</option>
+            <option value="OUT12">OUT12</option>
+            <option value="OUT6">OUT6</option>
+            <option value="IN25">IN25</option>
+            <option value="IN12">IN12</option>
+            <option value="IN6">IN6</option>
+          </select>
+        </div>
       </div>
-      <div id="rng-rev-empty" class="rng-hint"></div>
-    </div>
-
-  </div>
-
-  <!-- SETTINGS sub-pane -->
-  <div class="sub-pane" id="sp-settings">
-    <div class="box">
-      <div class="conv-title" id="settings-title">⚙ SETTINGS</div>
-      <div class="srow">
-        <label id="lbl-lon">LONGITUDE</label>
-        <input id="lon-input" type="number" min="-180" max="180" step="0.01" placeholder="15.28" style="width:110px"/>
-        <button class="geo-btn" id="geo-btn" onclick="getLocation()" data-tip="Use my location">📍</button>
+      <div class="row" style="margin-top:12px" class="no-print">
+        <button class="btn primary" id="btnAccSave">Spara konto</button>
+        <button class="btn" id="btnAccClear">Rensa</button>
+        <button class="btn danger" id="btnAccDelete">Ta bort konto</button>
       </div>
-      <div class="s-info" id="s-info"></div>
-      <div class="s-note" id="s-note">No DST — period time always based on UTC</div>
+      <div id="accMsg" class="muted" style="margin-top:10px"></div>
     </div>
-  </div>
-</div>
 
-<!-- ══ CALENDAR PANE ══ -->
-<div class="pane" id="pane-calendar">
-  <div class="cal-today-card">
-    <div class="ct-month" id="ct-month">PRIMA</div>
-    <div class="ct-day"   id="ct-day">1</div>
-    <div class="ct-year"  id="ct-year">2026</div>
-    <div class="ct-wd"    id="ct-wd">D1</div>
-    <div class="ct-greg"  id="ct-greg"></div>
-    <div class="cal-live"><span id="cl-pp">00</span>:<span id="cl-oo">00</span><span class="cal-live-ms" id="cl-ms">.000</span></div>
-  </div>
-  <div class="cal-nav">
-    <button class="cal-nav-btn" onclick="calNav(-1)">←</button>
-    <div class="cal-nav-center">
-      <div class="cal-nav-title" id="cal-nav-title">PRIMA</div>
-      <div class="cal-nav-year" id="cal-nav-year">2026</div>
-      <button class="today-btn" id="today-btn" onclick="goToToday()">TODAY</button>
+    <div class="card">
+      <h2>Kontoplan</h2>
+      <div class="row" style="align-items:flex-end">
+        <div style="flex:1;min-width:240px">
+          <label>Sök</label>
+          <input id="accSearch" placeholder="Sök 1930 eller namn…" />
+        </div>
+        <button class="btn no-print" id="btnAccSort">Sortera (konto)</button>
+      </div>
+      <div class="sep"></div>
+      <div style="max-height:520px;overflow:auto">
+        <table>
+          <thead>
+            <tr><th>Konto</th><th>Namn</th><th>Typ</th><th>Moms</th></tr>
+          </thead>
+          <tbody id="accTable"></tbody>
+        </table>
+      </div>
+      <div class="footer-note">Klicka på ett konto för att ladda det i formuläret.</div>
     </div>
-    <button class="cal-nav-btn" onclick="calNav(1)">→</button>
-  </div>
-  <div class="cal-view-toggle">
-    <button class="cvbtn active" id="vbtn-month" onclick="setCalView('month')">☰ <span id="vl-month">MONTH</span></button>
-    <button class="cvbtn"        id="vbtn-year"  onclick="setCalView('year')">⊞ <span id="vl-year">YEAR</span></button>
-  </div>
-  <div id="cal-month-view" style="width:100%">
-    <div class="cal-weekdays" id="cal-weekdays"></div>
-    <div class="cal-weeks"    id="cal-weeks"></div>
-  </div>
-  <div class="cal-year-grid" id="cal-year-view" style="display:none"></div>
-  <div class="cal-info">
-    <span id="cal-info-months">13 months</span> × <span>28 days</span> = <span>364 days</span><br>
-    + <span id="cal-info-wd">World Day</span> = <span>365 days/year</span><br>
-    <span id="cal-info-every">Every month always starts on D1</span>
-  </div>
-</div>
+  </section>
 
-<!-- EVENT MODAL -->
-<div class="evt-modal-overlay" id="evt-modal" onclick="evtModalOutsideClick(event)">
-  <div class="evt-modal" id="evt-modal-inner">
-    <div class="evt-modal-hdr">
-      <div class="evt-modal-title" id="evt-modal-title">EVENTS</div>
-      <button class="evt-modal-close" onclick="closeEvtModal()">✕</button>
+  <section id="tab-verifikat" class="hidden grid two">
+    <div class="card">
+      <h2>Nytt verifikat</h2>
+      <div class="row">
+        <div style="flex:1;min-width:200px">
+          <label>Datum</label>
+          <input id="vDate" type="date" />
+        </div>
+        <div style="flex:0.6;min-width:120px">
+          <label>Serie</label>
+          <input id="vSeries" placeholder="A" />
+        </div>
+        <div style="flex:0.8;min-width:140px">
+          <label>Ver.nr</label>
+          <input id="vNo" type="number" min="1" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1;min-width:240px">
+          <label>Text</label>
+          <input id="vText" placeholder="Ex: Kundfaktura 1001" />
+        </div>
+      </div>
+
+      <div class="sep"></div>
+
+      <h2 style="margin-top:0">Konteringsrader</h2>
+      <div class="muted small">Summor måste balansera innan du kan spara. Periodlås blockerar sparande i låst period.</div>
+      <div class="sep"></div>
+
+      <div id="lines"></div>
+
+      <div class="row" style="margin-top:10px">
+        <button class="btn no-print" id="btnAddLine">+ Lägg till rad</button>
+        <div class="right">
+          <span class="pill">Debet: <span class="mono" id="sumDebit">0.00</span></span>
+          <span class="pill">Kredit: <span class="mono" id="sumCredit">0.00</span></span>
+          <span class="pill">Diff: <span class="mono" id="sumDiff">0.00</span></span>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:12px" class="no-print">
+        <button class="btn primary" id="btnSaveVoucher">Spara verifikat</button>
+        <button class="btn" id="btnClearVoucher">Rensa</button>
+        <button class="btn danger" id="btnDeleteVoucher">Ta bort (om laddat)</button>
+      </div>
+      <div id="voucherMsg" class="muted" style="margin-top:10px"></div>
     </div>
-    <div id="evt-modal-body"></div>
-    <div class="evt-modal-footer">
-      <button class="evt-cancel-btn" onclick="closeEvtModal()" id="evt-cancel-btn">CANCEL</button>
-      <button class="evt-save-btn"   onclick="saveEvts()"      id="evt-save-btn">SAVE</button>
+
+    <div class="card">
+      <h2>Verifikationslista</h2>
+      <div class="row" style="align-items:flex-end">
+        <div style="flex:1;min-width:200px">
+          <label>Period från</label>
+          <input id="listFrom" type="date" />
+        </div>
+        <div style="flex:1;min-width:200px">
+          <label>Period till</label>
+          <input id="listTo" type="date" />
+        </div>
+        <div style="flex:1;min-width:220px">
+          <label>Sök (text/serie/nr)</label>
+          <input id="voucherSearch" placeholder="ex: A12 eller 'insättning'…" />
+        </div>
+        <button class="btn no-print" id="btnRefreshList">Uppdatera</button>
+      </div>
+      <div class="sep"></div>
+      <div style="max-height:520px;overflow:auto">
+        <table>
+          <thead>
+            <tr><th>Datum</th><th>Serie</th><th>Nr</th><th>Text</th><th class="num">Rader</th></tr>
+          </thead>
+          <tbody id="voucherTable"></tbody>
+        </table>
+      </div>
+      <div class="footer-note">Klicka på ett verifikat för att ladda det i formuläret.</div>
     </div>
-  </div>
-</div>
+  </section>
+
+  <section id="tab-rapporter" class="hidden grid two">
+    <div class="card">
+      <h2>Rapportparametrar</h2>
+      <div class="row">
+        <div style="flex:1;min-width:200px">
+          <label>Från</label>
+          <input id="rFrom" type="date" />
+        </div>
+        <div style="flex:1;min-width:200px">
+          <label>Till</label>
+          <input id="rTo" type="date" />
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <div style="flex:1;min-width:220px">
+          <label>Rapport</label>
+          <select id="rType">
+            <option value="trial">Saldolista</option>
+            <option value="ledger">Huvudbok (per konto)</option>
+            <option value="pl">Resultaträkning</option>
+            <option value="bs">Balansräkning</option>
+            <option value="vat">Momsrapport (v2)</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:220px" id="ledgerAccountWrap" class="hidden">
+          <label>Konto (för huvudbok)</label>
+          <input id="ledgerAccount" placeholder="1930" />
+        </div>
+      </div>
+      <div class="row no-print" style="margin-top:12px">
+        <button class="btn primary" id="btnRunReport">Kör rapport</button>
+        <button class="btn" id="btnCopyReport">Kopiera (text)</button>
+        <button class="btn" id="btnPrintReport">Skriv ut</button>
+      </div>
+      <div id="reportMsg" class="muted" style="margin-top:10px"></div>
+    </div>
+
+    <div class="card">
+      <h2>Resultat</h2>
+      <div id="reportOut" class="small muted">—</div>
+      <textarea id="reportText" class="hidden" readonly></textarea>
+    </div>
+  </section>
+
+  <section id="tab-importexport" class="hidden grid two">
+    <div class="card">
+      <h2>Export (JSON-backup)</h2>
+      <div class="muted small">Innehåller företag, kontoplan, verifikat och logg.</div>
+      <div class="sep"></div>
+      <div class="row no-print">
+        <button class="btn ok" id="btnExportJSONFile">Ladda ner JSON</button>
+        <button class="btn" id="btnExportJSONCopy">Kopiera JSON</button>
+      </div>
+      <textarea id="jsonOut" readonly></textarea>
+    </div>
+
+    <div class="card">
+      <h2>Import (JSON)</h2>
+      <div class="muted small">Import ersätter befintlig data.</div>
+      <div class="sep"></div>
+      <div class="row no-print">
+        <input id="jsonFile" type="file" accept=".json,application/json" />
+        <button class="btn primary" id="btnImportJSONFile">Importera fil</button>
+      </div>
+      <div class="sep"></div>
+      <textarea id="jsonIn" placeholder="{ ... }"></textarea>
+      <div class="row no-print" style="margin-top:10px">
+        <button class="btn primary" id="btnImportJSON">Importera text</button>
+      </div>
+      <div id="importMsg" class="muted" style="margin-top:10px"></div>
+
+      <div class="sep"></div>
+
+      <h2>SIE (import/export)</h2>
+      <div class="muted small">SIE-import: klistra in eller ladda upp .sie. Du kan välja om dubbletter ska ersättas.</div>
+      <div class="sep"></div>
+      <div class="row no-print" style="align-items:flex-end">
+        <div style="flex:1;min-width:260px">
+          <label>.sie fil</label>
+          <input id="sieFile" type="file" accept=".sie,text/plain" />
+        </div>
+        <div style="flex:0.6;min-width:180px">
+          <label>Dubbletter</label>
+          <select id="sieDupe">
+            <option value="skip">Skippa</option>
+            <option value="replace">Ersätt</option>
+          </select>
+        </div>
+        <button class="btn primary" id="btnImportSIEFile">Importera SIE</button>
+      </div>
+      <div class="sep"></div>
+      <textarea id="sieIn" placeholder="#PROGRAM ..."></textarea>
+      <div class="row no-print" style="margin-top:10px">
+        <button class="btn primary" id="btnImportSIE">Importera SIE-text</button>
+        <button class="btn" id="btnExportSIEFile">Ladda ner SIE</button>
+        <button class="btn" id="btnCopySIE">Kopiera SIE</button>
+      </div>
+      <textarea id="sieOut" readonly></textarea>
+    </div>
+  </section>
+
+  <section id="tab-logg" class="hidden grid two">
+    <div class="card">
+      <h2>Systemlogg (audit)</h2>
+      <div class="muted small">
+        Loggen sparar lokalt: import/export, skapade/ändrade verifikat och konton, periodlås, mm.
+      </div>
+      <div class="sep"></div>
+      <div class="row no-print">
+        <button class="btn" id="btnLogRefresh">Uppdatera</button>
+        <button class="btn danger" id="btnLogClear">Töm logg</button>
+      </div>
+      <div class="sep"></div>
+      <div style="max-height:560px;overflow:auto">
+        <table>
+          <thead><tr><th>Tid</th><th>Händelse</th><th>Detalj</th></tr></thead>
+          <tbody id="logTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Diagnostik</h2>
+      <div class="kv" id="diag"></div>
+      <div class="sep"></div>
+      <div class="muted small">
+        Om du vill migrera från tidigare v1 (localStorage) så kan v2 försöka importera automatiskt om den hittar v1-nyckeln.
+      </div>
+    </div>
+  </section>
+</main>
 
 <script>
-// ── Constants ──
-const MPD=10000, RSPD=86400;
-const J2000_MS=946684800000;
-const MNAMES=['Prima','Seconda','Tertia','Quarta','Quinta','Sexta','Septima','Octava','Nona','Decima','Undecima','Duodecima','Tredecima'];
-const GM_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
-const GM_SV=['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];
-const GMS_EN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-const GMS_SV=['Jan','Feb','Mar','Apr','Maj','Jun','Jul','Aug','Sep','Okt','Nov','Dec'];
-const WEEKDAYS_SHORT=['D1','D2','D3','D4','D5','D6','D7'];
-const WEEKDAYS_LONG=['D1','D2','D3','D4','D5','D6','D7'];
-const EVT_COLORS=['#ff6666','#ffaa44','#ffee44','#55ff88','#44aaff','#aa77ff','#ff88cc'];
+const DB_NAME = "spcs_html_kv";
+const DB_VER = 1;
+const STORE = "kv";
+const KV_KEY = "db";
+const FALLBACK_KEY = "spcs_html_v2_fallback";
+const V1_KEY = "spcs_html_v1";
 
-const TZ_PRESETS=[
-  {name:'UTC',offset:0},{name:'Reykjavik',offset:0},
-  {name:'London',offset:0},{name:'Lisbon',offset:0},
-  {name:'Stockholm',offset:1},{name:'Berlin',offset:1},{name:'Paris',offset:1},{name:'Rome',offset:1},
-  {name:'Helsinki',offset:2},{name:'Cairo',offset:2},{name:'Athens',offset:2},
-  {name:'Moscow',offset:3},{name:'Istanbul',offset:3},{name:'Riyadh',offset:3},
-  {name:'Dubai',offset:4},{name:'Kabul',offset:4.5},
-  {name:'Tashkent',offset:5},{name:'Mumbai',offset:5.5},{name:'Colombo',offset:5.5},
-  {name:'Dhaka',offset:6},{name:'Yangon',offset:6.5},
-  {name:'Bangkok',offset:7},{name:'Jakarta',offset:7},
-  {name:'Singapore',offset:8},{name:'Beijing',offset:8},{name:'Hong Kong',offset:8},
-  {name:'Seoul',offset:9},{name:'Tokyo',offset:9},
-  {name:'Sydney',offset:10},{name:'Brisbane',offset:10},
-  {name:'Auckland',offset:12},
-  {name:'Honolulu',offset:-10},{name:'Anchorage',offset:-9},
-  {name:'Los Angeles',offset:-8},{name:'Denver',offset:-7},
-  {name:'Chicago',offset:-6},{name:'Mexico City',offset:-6},
-  {name:'New York',offset:-5},{name:'Bogotá',offset:-5},
-  {name:'São Paulo',offset:-3},{name:'Buenos Aires',offset:-3},
-  {name:'Azores',offset:-1},
-];
+let storageMode = "init";
+let kvdb = null;
 
-// ── State ──
-let currentLang='en', currentTheme='system', calView='month';
-let calViewYear=new Date().getUTCFullYear(), calViewMonth=1;
-let longitude=null;
-// Alarms
-let alarms=[], alarmIdCounter=0, alarmInterval=null, audioCtx=null;
-// Events  {key: [{text,color}]}
-let events={};
-// Timezone list
-let tzList=[
-  {name:'UTC',offset:0},{name:'Stockholm',offset:1},
-  {name:'New York',offset:-5},{name:'Tokyo',offset:9}
-];
-// Stopwatch
-let sw={running:false,start:0,elapsed:0,laps:[]};
-// Countdown
-let cd={running:false,target:0,remaining:0,done:false};
-// Current editing events
-let editEvtCtx={year:0,month:0,day:0,evts:[]};
-
-// ── Persist ──
-function saveState(){
-  try{
-    localStorage.setItem('ptc-theme',currentTheme);
-    localStorage.setItem('ptc-lang',currentLang);
-    if(longitude!==null)localStorage.setItem('ptc-lon',longitude);
-    else localStorage.removeItem('ptc-lon');
-    localStorage.setItem('ptc-alarms',JSON.stringify(alarms));
-    localStorage.setItem('ptc-alarms-ctr',alarmIdCounter);
-    localStorage.setItem('ptc-events',JSON.stringify(events));
-    localStorage.setItem('ptc-tz',JSON.stringify(tzList));
-  }catch(e){}
+function $(id){ return document.getElementById(id); }
+function setStatus(text, kind=""){
+  const pill = $("statusPill");
+  pill.textContent = text;
+  pill.style.borderColor = "rgba(255,255,255,.12)";
+  pill.style.background = "rgba(255,255,255,.06)";
+  if(kind==="ok"){ pill.style.borderColor="rgba(93,255,179,.35)"; pill.style.background="rgba(93,255,179,.14)";}
+  if(kind==="err"){ pill.style.borderColor="rgba(255,107,107,.45)"; pill.style.background="rgba(255,107,107,.16)";}
 }
-function loadState(){
-  try{
-    const th=localStorage.getItem('ptc-theme');if(th)currentTheme=th;
-    const la=localStorage.getItem('ptc-lang');if(la)currentLang=la;
-    const lo=localStorage.getItem('ptc-lon');
-    if(lo!==null){longitude=parseFloat(lo);}
-    const al=localStorage.getItem('ptc-alarms');
-    if(al){alarms=JSON.parse(al);alarms.forEach(a=>{a.ringing=false;a.on=a.on||false;});}
-    const ac=localStorage.getItem('ptc-alarms-ctr');
-    if(ac)alarmIdCounter=parseInt(ac)||0;
-    const ev=localStorage.getItem('ptc-events');if(ev)events=JSON.parse(ev);
-    const tz=localStorage.getItem('ptc-tz');if(tz)tzList=JSON.parse(tz);
-  }catch(e){}
+function setStoragePill(){
+  $("storagePill").textContent = `Lagring: ${storageMode==="idb"?"IndexedDB":"localStorage"}`;
 }
-
-// ── Theme ──
-const sysDark=window.matchMedia('(prefers-color-scheme: dark)');
-function applyTheme(){
-  const dark=currentTheme==='dark'||(currentTheme==='system'&&sysDark.matches);
-  document.documentElement.setAttribute('data-theme',dark?'dark':'light');
-  ['t-dark','t-system','t-light'].forEach(id=>document.getElementById(id).classList.remove('active'));
-  document.getElementById('t-'+currentTheme).classList.add('active');
-}
-function setTheme(t){currentTheme=t;applyTheme();saveState();}
-sysDark.addEventListener('change',applyTheme);
-
-// ── Language strings ──
-const L={
-  en:{
-    title:'Period Clock',units:'PERIOD : MOMENT',p:'PERIOD',o:'MOMENT',
-    realTime:'REAL TIME',perTime:'PERIOD TIME',
-    convTitle:'TIME CONVERTER',alarmTitle:'ALARM',alarmLabel:'PERIOD TIME',
-    hint:'Type a time and see the result instantly',
-    infoDay:'Day: 100 periods × 100 moments = 10 000 moments',
-    moment:'moment',period:'period',realsec:'real seconds',min:'min',sec:'sec',
-    alarmOff:'—',alarmSet:'Alarm set for ',alarmRinging:'⚡ RINGING',
-    dismiss:'DISMISS',on:'ON',off:'OFF',invalidTime:'Invalid (PP:OO)',
-    dark:'Dark',system:'System',light:'Light',fs:'Fullscreen',exitFs:'Exit fullscreen',
-    tabClock:'CLOCK',tabCal:'CALENDAR',
-    worldDay:'WORLD DAY',leapDay:'LEAP DAY',
-    wdDesc:'A day outside all months — a global celebration shared by everyone on Earth.',
-    ldDesc:'An extra day outside all months, given to us by the cosmos every 4 years.',
-    calInfoMonths:'13 months',calInfoWD:'World Day',calInfoEvery:'Every month always starts on D1',
-    viewMonth:'MONTH',viewYear:'YEAR',
-    notLeap:'Not a leap year — no leap day',
-    settingsTitle:'⚙ SETTINGS',lonLabel:'LONGITUDE',
-    solarLabel:'SOLAR',localLabel:'LOCAL',epochLabel:'EPOCH',
-    epochUnit:'moments since J2000',
-    sNote:'No DST — period time always based on UTC',
-    lonHint:'Enter longitude or use 📍',
-    solarOff:(h,m,neg)=>`${neg?'−':'+'}${h}h ${m}min from UTC`,
-    gregDate:(d,m,y)=>`${GM_EN[m]} ${d}, ${y}`,
-    gregShort:(d,m)=>`${GMS_EN[m]} ${d}`,
-    addAlarm:'ADD ALARM',alarmLabelHint:'label...',
-    alarmPlaceholder:'PP:OO',
-    swTitle:'STOPWATCH',swStart:'START',swStop:'STOP',swLap:'LAP',swReset:'RESET',swLapLabel:'LAP',swTotalLabel:'TOTAL',
-    cdTitle:'COUNTDOWN TIMER',cdDuration:'DURATION PP:OO',cdDone:'⚡ TIME\'S UP!',cdStart:'START',cdStop:'PAUSE',cdReset:'RESET',
-    tzTitle:'TIMEZONE COMPARATOR',tzAdd:'+ ADD',tzCity:'CITY',tzUTC:'UTC',tzTime:'TIME',tzPT:'P.TIME',
-    today:'TODAY',evtSave:'SAVE',evtCancel:'CANCEL',evtAdd:'+ Add event',evtNoEvts:'Click a day to add events',
-    stTime:'TIME',stStop:'STOPWATCH',stTimer:'TIMER',stZones:'ZONES',stAlarms:'ALARMS',stSettings:'SETTINGS',stSpan:'CONVERT',
-    spanTitle:'DURATION CONVERTER',spanH:'HOURS',spanM:'MIN',spanS:'SEC',
-    spanHint:'Enter a duration to convert',
-    spanPeriods:'periods',spanMoments:'moments',spanSubMoments:'sub-moments',
-    spanDays:'days',spanReal:'real seconds',
-    spanBreakPeriods:'TOTAL PERIODS',spanBreakMoments:'TOTAL MOMENTS',
-    spanBreakSec:'REAL SECONDS',spanBreakDays:'REAL DAYS',
-    spanPresets:['1 min','5 min','15 min','30 min','1 hour','4 hours','8 hours','1 day'],
-    spanDirA:'REAL TIME  →  PERIOD TIME',spanDirB:'PERIOD TIME  →  REAL TIME',
-    spanLblPP:'PERIODS',spanLblOO:'MOMENTS',spanLblSub:'×0.001',
-    spanRevHint:'Enter period duration to convert',
-    spanRevH:'HOURS',spanRevM:'MINUTES',spanRevS:'SECONDS',
-    spanRevBreakH:'HOURS',spanRevBreakM:'MINUTES',spanRevBreakS:'SECONDS',spanRevBreakSec:'TOTAL SECONDS',
-    rngTitleA:'TIME RANGE → PERIOD DURATION',rngTitleB:'PERIOD RANGE → REAL DURATION',
-    rngFrom:'FROM',rngTo:'TO',rngOvernight:'Overnight (end is next day)',
-    rngHintA:'Enter two clock times to get the period duration',
-    rngHintB:'Enter two period times to get the real duration',
-  },
-  sv:{
-    title:'Periodklocka',units:'PERIOD : ÖGONBLICK',p:'PERIOD',o:'ÖGONBLICK',
-    realTime:'VERKLIG TID',perTime:'PERIODTID',
-    convTitle:'TIDSÖVERSÄTTARE',alarmTitle:'LARM',alarmLabel:'PERIODTID',
-    hint:'Skriv ett klockslag och se resultatet direkt',
-    infoDay:'Dygn: 100 perioder × 100 ögonblick = 10 000 ögonblick',
-    moment:'ögonblick',period:'period',realsec:'riktiga sekunder',min:'min',sec:'sek',
-    alarmOff:'—',alarmSet:'Larm inställt på ',alarmRinging:'⚡ RINGER',
-    dismiss:'STÄNG',on:'PÅ',off:'AV',invalidTime:'Ogiltig (PP:OO)',
-    dark:'Mörkt',system:'System',light:'Ljust',fs:'Helskärm',exitFs:'Avsluta helskärm',
-    tabClock:'KLOCKA',tabCal:'KALENDER',
-    worldDay:'VÄRLDSDAGEN',leapDay:'SKOTTDAG',
-    wdDesc:'En dag utanför alla månader — en global firande som delas av alla på jorden.',
-    ldDesc:'En extra dag utanför alla månader, given till oss av kosmos vart fjärde år.',
-    calInfoMonths:'13 månader',calInfoWD:'Världsdagen',calInfoEvery:'Varje månad börjar alltid på D1',
-    viewMonth:'MÅNAD',viewYear:'ÅR',
-    notLeap:'Inget skottår — ingen skottdag',
-    settingsTitle:'⚙ INSTÄLLNINGAR',lonLabel:'LONGITUD',
-    solarLabel:'SOLAR',localLabel:'LOKAL',epochLabel:'EPOK',
-    epochUnit:'ögonblick sedan J2000',
-    sNote:'Ingen sommartid — periodtid baseras alltid på UTC',
-    lonHint:'Ange longitud eller använd 📍',
-    solarOff:(h,m,neg)=>`${neg?'−':'+'}${h}h ${m}min från UTC`,
-    gregDate:(d,m,y)=>`${d} ${GM_SV[m]} ${y}`,
-    gregShort:(d,m)=>`${d} ${GMS_SV[m]}`,
-    addAlarm:'LÄGG TILL LARM',alarmLabelHint:'etikett...',
-    alarmPlaceholder:'PP:OO',
-    swTitle:'TIDTAGARUR',swStart:'STARTA',swStop:'STOPP',swLap:'VARV',swReset:'NOLLSTÄLL',swLapLabel:'VARV',swTotalLabel:'TOTALT',
-    cdTitle:'NEDRÄKNING',cdDuration:'LÄNGD PP:OO',cdDone:'⚡ KLAR!',cdStart:'STARTA',cdStop:'PAUSA',cdReset:'NOLLSTÄLL',
-    tzTitle:'TIDSZONER',tzAdd:'+ LÄGG TILL',tzCity:'ORT',tzUTC:'UTC',tzTime:'TID',tzPT:'P.TID',
-    today:'IDAG',evtSave:'SPARA',evtCancel:'AVBRYT',evtAdd:'+ Lägg till händelse',evtNoEvts:'Klicka en dag för att lägga till händelser',
-    stTime:'TID',stStop:'TIDTAGARUR',stTimer:'TIMER',stZones:'ZONER',stAlarms:'LARM',stSettings:'INSTÄLLNINGAR',stSpan:'KONVERTERA',
-    spanTitle:'VARAKTIGHETSOMVANDLARE',spanH:'TIMMAR',spanM:'MIN',spanS:'SEK',
-    spanHint:'Ange en varaktighet för att konvertera',
-    spanPeriods:'perioder',spanMoments:'ögonblick',spanSubMoments:'delögonblick',
-    spanDays:'dagar',spanReal:'riktiga sekunder',
-    spanBreakPeriods:'TOTALA PERIODER',spanBreakMoments:'TOTALA ÖGONBLICK',
-    spanBreakSec:'RIKTIGA SEKUNDER',spanBreakDays:'RIKTIGA DAGAR',
-    spanPresets:['1 min','5 min','15 min','30 min','1 timme','4 timmar','8 timmar','1 dag'],
-    spanDirA:'VERKLIG TID  →  PERIODTID',spanDirB:'PERIODTID  →  VERKLIG TID',
-    spanLblPP:'PERIODER',spanLblOO:'ÖGONBLICK',spanLblSub:'×0.001',
-    spanRevHint:'Ange en periodvaraktighet för att konvertera',
-    spanRevH:'TIMMAR',spanRevM:'MINUTER',spanRevS:'SEKUNDER',
-    spanRevBreakH:'TIMMAR',spanRevBreakM:'MINUTER',spanRevBreakS:'SEKUNDER',spanRevBreakSec:'TOTALA SEKUNDER',
-    rngTitleA:'TIDSINTERVALL → PERIODTID',rngTitleB:'PERIODINTERVALL → VERKLIG TID',
-    rngFrom:'FRÅN',rngTo:'TILL',rngOvernight:'Nästa dag (slutet är dagen efter)',
-    rngHintA:'Ange två klockslag för att få periodvaraktigheten',
-    rngHintB:'Ange två periodtider för att få den verkliga varaktigheten',
-  }
-};
-
-function s(id,v){const e=document.getElementById(id);if(e)e.textContent=v;}
-function g(id){return document.getElementById(id);}
-
-function setLang(lang){
-  currentLang=lang;const l=L[lang];
-  s('title',l.title);s('tl-clock',l.tabClock);s('tl-cal',l.tabCal);
-  s('label-units',l.units);s('lbl-p',l.p);s('lbl-o',l.o);
-  s('lbl-real',l.realTime);s('lbl-per',l.perTime);
-  s('conv-title',l.convTitle);s('conv-hint',l.hint);
-  s('info-day',l.infoDay);s('info-moment',l.moment);s('info-period',l.period);
-  s('info-rs',l.realsec);s('info-rs2',l.realsec);s('info-min',l.min);s('info-sec',l.sec);
-  s('cal-info-months',l.calInfoMonths);s('cal-info-wd',l.calInfoWD);s('cal-info-every',l.calInfoEvery);
-  s('vl-month',l.viewMonth);s('vl-year',l.viewYear);
-  s('settings-title',l.settingsTitle);s('lbl-lon',l.lonLabel);
-  s('lbl-solar',l.solarLabel);s('lbl-local',l.localLabel);
-  s('lbl-epoch',l.epochLabel);s('epoch-unit',l.epochUnit);
-  s('s-note',l.sNote);
-  s('sw-title',l.swTitle);s('sw-label-units',l.units);
-  s('cd-title',l.cdTitle);s('cd-label-units',l.units);s('cd-inp-lbl',l.cdDuration);
-  s('tz-title',l.tzTitle);s('tz-add-btn',l.tzAdd);s('tz-cust-btn',l.tzAdd);
-  s('tzh-city',l.tzCity);s('tzh-utc',l.tzUTC);s('tzh-time',l.tzTime);s('tzh-pt',l.tzPT);
-  s('alarms-title',l.alarmTitle);
-  s('today-btn',l.today);s('evt-save-btn',l.evtSave);s('evt-cancel-btn',l.evtCancel);
-  s('stl-time',l.stTime);s('stl-stop',l.stStop);s('stl-timer',l.stTimer);
-  s('stl-zones',l.stZones);s('stl-alarms',l.stAlarms);s('stl-settings',l.stSettings);s('stl-span',l.stSpan);
-  s('span-title',l.spanTitle);s('span-lbl-h',l.spanH);s('span-lbl-m',l.spanM);s('span-lbl-s',l.spanS);
-  s('span-dir-a',l.spanDirA);s('span-dir-b',l.spanDirB);
-  s('span-lbl-pp',l.spanLblPP);s('span-lbl-oo',l.spanLblOO);s('span-lbl-sub',l.spanLblSub);
-  const se=g('span-empty');if(se)se.textContent=l.spanHint;
-  const sre=g('span-rev-empty');if(sre)sre.textContent=l.spanRevHint;
-  s('rng-title-a',l.rngTitleA);s('rng-title-b',l.rngTitleB);
-  s('rng-lbl-from-a',l.rngFrom);s('rng-lbl-to-a',l.rngTo);
-  s('rng-lbl-from-b',l.rngFrom);s('rng-lbl-to-b',l.rngTo);
-  s('rng-overnight-txt',l.rngOvernight);s('rng-b-overnight-txt',l.rngOvernight);
-  const re=g('rng-empty');if(re)re.textContent=l.rngHintA;
-  const rre=g('rng-rev-empty');if(rre)rre.textContent=l.rngHintB;
-  renderSpanPresets();
-  const rngEmp=g('rng-empty');if(rngEmp)rngEmp.textContent=L[currentLang].rngHintA;
-  const rngRevEmp=g('rng-rev-empty');if(rngRevEmp)rngRevEmp.textContent=L[currentLang].rngHintB;
-  document.getElementById('btn-en').classList.toggle('active',lang==='en');
-  document.getElementById('btn-sv').classList.toggle('active',lang==='sv');
-  document.getElementById('t-dark').dataset.tip=l.dark;
-  document.getElementById('t-system').dataset.tip=l.system;
-  document.getElementById('t-light').dataset.tip=l.light;
-  const fs=!!document.fullscreenElement;
-  document.getElementById('btn-fs').dataset.tip=fs?l.exitFs:l.fs;
-  updateSolarInfo();renderCalendar();updateCalToday();renderAlarms();renderTZ();
-  saveState();
-}
-
-// ── Tabs ──
-function showTab(tab){
-  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-  document.getElementById('pane-'+tab).classList.add('active');
-  document.getElementById('tab-'+tab).classList.add('active');
-}
-function showSubTab(t){
-  document.querySelectorAll('.sub-pane').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.stb').forEach(b=>b.classList.remove('active'));
-  document.getElementById('sp-'+t).classList.add('active');
-  document.getElementById('stb-'+t).classList.add('active');
-}
-
-// ── Solar time ──
-function getSolarTime(now){
-  if(longitude===null)return null;
-  const offMs=longitude*4*60*1000;
-  const sd=new Date(now.getTime()+offMs);
-  const offTotalMin=Math.round(longitude*4);
-  const neg=offTotalMin<0,abs=Math.abs(offTotalMin);
-  const offH=Math.floor(abs/60),offM=abs%60;
-  return{h:sd.getUTCHours(),m:sd.getUTCMinutes(),s:sd.getUTCSeconds(),ms:sd.getUTCMilliseconds(),offH,offM,neg};
-}
-
-function getLocation(){
-  const btn=g('geo-btn');btn.textContent='⏳';
-  if(!navigator.geolocation){s('s-info','Geolocation not supported');btn.textContent='📍';return;}
-  navigator.geolocation.getCurrentPosition(pos=>{
-    longitude=Math.round(pos.coords.longitude*100)/100;
-    g('lon-input').value=longitude;updateSolarInfo();btn.textContent='📍';saveState();
-  },()=>{s('s-info','Could not get location');btn.textContent='📍';});
-}
-
-g('lon-input').addEventListener('input',function(){
-  const v=parseFloat(this.value);
-  if(!isNaN(v)&&v>=-180&&v<=180){longitude=v;}else{longitude=null;}
-  updateSolarInfo();saveState();
-});
-
-function updateSolarInfo(){
-  const l=L[currentLang],srow=g('solar-row');
-  if(longitude===null){s('s-info',l.lonHint);srow.style.display='none';}
-  else{
-    const offTotalMin=Math.round(longitude*4),neg=offTotalMin<0,abs=Math.abs(offTotalMin);
-    s('s-info',l.solarOff(Math.floor(abs/60),abs%60,neg));srow.style.display='';
-  }
-}
-
-// ── Epoch ──
-function fmtNum(n){return Math.floor(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g,' ');}
-
-// ── Clock ──
-function getPT(){
-  const n=new Date();
-  const rs=n.getUTCHours()*3600+n.getUTCMinutes()*60+n.getUTCSeconds()+n.getUTCMilliseconds()/1000;
-  const t=(rs/RSPD)*MPD;
-  return{p:Math.floor(t/100),o:Math.floor(t%100),sub:Math.floor((t%1)*1000),t};
-}
-
-const cv=g('analog'),cx2=cv.getContext('2d'),CX=110,CY=110,R=100;
-function gv(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
-function drawAnalog(t){
-  cx2.clearRect(0,0,220,220);
-  cx2.beginPath();cx2.arc(CX,CY,R,0,Math.PI*2);cx2.fillStyle=gv('--face');cx2.fill();
-  cx2.strokeStyle=gv('--face-ring');cx2.lineWidth=3;cx2.stroke();
-  for(let i=0;i<100;i++){
-    if(i%10===0)continue;
-    const a=(i/100)*Math.PI*2-Math.PI/2;
-    cx2.beginPath();cx2.moveTo(CX+Math.cos(a)*(R-8),CY+Math.sin(a)*(R-8));cx2.lineTo(CX+Math.cos(a)*(R-3),CY+Math.sin(a)*(R-3));
-    cx2.strokeStyle=gv('--tick-min');cx2.lineWidth=1.5;cx2.stroke();
-  }
-  for(let i=0;i<10;i++){
-    const a=(i/10)*Math.PI*2-Math.PI/2;
-    cx2.beginPath();cx2.moveTo(CX+Math.cos(a)*(R-16),CY+Math.sin(a)*(R-16));cx2.lineTo(CX+Math.cos(a)*(R-3),CY+Math.sin(a)*(R-3));
-    cx2.strokeStyle=gv('--tick');cx2.lineWidth=3;cx2.stroke();
-    cx2.fillStyle=gv('--num');cx2.font='bold 11px Courier New';cx2.textAlign='center';cx2.textBaseline='middle';
-    cx2.fillText(i*10,CX+Math.cos(a)*(R-27),CY+Math.sin(a)*(R-27));
-  }
-  const hH=gv('--hand-h'),hM=gv('--hand-m');
-  cx2.shadowColor=hH;cx2.shadowBlur=8;dh((t/MPD)*Math.PI*2-Math.PI/2,R*.55,5,hH);
-  cx2.shadowColor=hM;cx2.shadowBlur=8;dh(((t%100)/100)*Math.PI*2-Math.PI/2,R*.80,2.5,hM);
-  cx2.shadowBlur=0;
-  cx2.beginPath();cx2.arc(CX,CY,5,0,Math.PI*2);cx2.fillStyle=gv('--center');cx2.fill();
-  cx2.strokeStyle=gv('--face-ring');cx2.lineWidth=1.5;cx2.stroke();
-}
-function dh(a,len,w,c){
-  cx2.beginPath();cx2.moveTo(CX,CY);cx2.lineTo(CX+Math.cos(a)*len,CY+Math.sin(a)*len);
-  cx2.strokeStyle=c;cx2.lineWidth=w;cx2.lineCap='round';cx2.stroke();
-}
-function p2(n){return String(n).padStart(2,'0');}
-function p3(n){return String(n).padStart(3,'0');}
-
-function update(){
-  const dt=getPT(),now=new Date();
-  s('disp',`${p2(dt.p)}:${p2(dt.o)}`);
-  s('sub-moment',`.${p3(dt.sub)}`);
-  g('bp').style.width=dt.p+'%';g('bo').style.width=dt.o+'%';
-  s('bp-val',`${dt.p} / 100`);s('bo-val',`${dt.o} / 100`);
-  document.getElementById('tr-utc').textContent=`${p2(now.getUTCHours())}:${p2(now.getUTCMinutes())}:${p2(now.getUTCSeconds())}`;
-  document.getElementById('tr-utc-ms').textContent=`.${p3(now.getUTCMilliseconds())}`;
-  const sol=getSolarTime(now);
-  if(sol){s('tr-solar',`${p2(sol.h)}:${p2(sol.m)}:${p2(sol.s)}`);s('tr-solar-off',L[currentLang].solarOff(sol.offH,sol.offM,sol.neg));}
-  s('tr-local',`${p2(now.getHours())}:${p2(now.getMinutes())}:${p2(now.getSeconds())}`);
-  const ep=(now.getTime()-J2000_MS)/(8640000);
-  s('epoch-val',fmtNum(ep));
-  drawAnalog(dt.t);
-  checkAlarms(dt);
-  s('cl-pp',p2(dt.p));s('cl-oo',p2(dt.o));s('cl-ms',`.${p3(dt.sub)}`);
-  updateSWDisplay();
-  updateCDDisplay();
-  updateTZ();
-}
-
-// ── Converter ──
-let convUseLocal=false, rngUseLocal=false;
-
-function localOffsetSec(){
-  // getTimezoneOffset returns minutes (positive = behind UTC, negative = ahead)
-  return -(new Date().getTimezoneOffset()*60);
-}
-function localOffsetLabel(){
-  const off=localOffsetSec();
-  const abs=Math.abs(off),h=Math.floor(abs/3600),m=Math.floor((abs%3600)/60);
-  return`LOCAL (UTC${off>=0?'+':'-'}${h}${m?':'+p2(m):''})`;
-}
-
-function toggleConvTZ(){
-  convUseLocal=!convUseLocal;
-  const btn=g('conv-tz-btn');
-  btn.textContent=convUseLocal?localOffsetLabel():'UTC';
-  btn.classList.toggle('local',convUseLocal);
-  // re-trigger both converters
-  g('real-input').dispatchEvent(new Event('input'));
-  g('per-input').dispatchEvent(new Event('input'));
-}
-function toggleRngTZ(){
-  rngUseLocal=!rngUseLocal;
-  const btn=g('rng-tz-btn');
-  btn.textContent=rngUseLocal?localOffsetLabel():'UTC';
-  btn.classList.toggle('local',rngUseLocal);
-  calcRange();
-}
-
-function realToPer(str, offsetSec=0){
-  const p=str.split(':').map(Number);if(p.some(isNaN))return null;
-  const[h=0,m=0,sec=0]=p;if(h>23||m>59||sec>59)return null;
-  const utcSec=((h*3600+m*60+sec)-offsetSec+86400)%86400;
-  const t=(utcSec/RSPD)*MPD;
-  return`${p2(Math.floor(t/100))}:${p2(Math.floor(t%100))}`;
-}
-function perToReal(str, offsetSec=0){
-  const p=str.split(':').map(Number);if(p.some(isNaN))return null;
-  const[pp=0,o=0]=p;if(pp>99||o>99)return null;
-  const rs=((pp*100+o)/MPD)*RSPD;
-  const localSec=(rs+offsetSec+86400)%86400;
-  return`${p2(Math.floor(localSec/3600))}:${p2(Math.floor((localSec%3600)/60))}:${p2(Math.floor(localSec%60))}`;
-}
-g('real-input').addEventListener('input',function(){
-  const off=convUseLocal?localOffsetSec():0;
-  const r=realToPer(this.value.trim(),off),el=g('real-to-per');
-  el.textContent=r||'—';el.style.color=r?'var(--conv-res)':'var(--conv-hint)';
-});
-g('per-input').addEventListener('input',function(){
-  const off=convUseLocal?localOffsetSec():0;
-  const r=perToReal(this.value.trim(),off),el=g('per-to-real');
-  el.textContent=r||'—';el.style.color=r?'var(--conv-res)':'var(--conv-hint)';
-});
-function copyResult(rid,bid){
-  const t=g(rid).textContent;if(!t||t==='—')return;
-  navigator.clipboard.writeText(t).then(()=>{
-    const b=g(bid);b.classList.add('copied');b.textContent='✓';
-    setTimeout(()=>{b.classList.remove('copied');b.textContent='⎘';},1500);
+function openKV(){
+  return new Promise((resolve,reject)=>{
+    if(!("indexedDB" in window)) return reject(new Error("IndexedDB saknas."));
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = ()=>{
+      const db = req.result;
+      if(!db.objectStoreNames.contains(STORE)) db.createObjectStore(STORE);
+    };
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror = ()=>reject(req.error || new Error("IndexedDB-fel."));
   });
 }
-
-// ── ALARMS (multiple) ──
-function getAC(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
-function beep(f,d,dl){
-  const ac=getAC(),o=ac.createOscillator(),gn=ac.createGain();
-  o.connect(gn);gn.connect(ac.destination);o.type='sine';o.frequency.value=f;
-  gn.gain.setValueAtTime(.3,ac.currentTime+dl);gn.gain.exponentialRampToValueAtTime(.001,ac.currentTime+dl+d);
-  o.start(ac.currentTime+dl);o.stop(ac.currentTime+dl+d);
-}
-function playAlarm(){beep(880,.15,0);beep(1100,.15,.2);beep(880,.15,.4);beep(1100,.15,.6);}
-
-function renderAlarms(){
-  const l=L[currentLang],cont=g('alarms-container');if(!cont)return;
-  let html=alarms.map(a=>`
-    <div class="alarm-item${a.ringing?' ringing':''}" id="ai-${a.id}">
-      <input class="alarm-time-inp" id="at-${a.id}" type="text" placeholder="${l.alarmPlaceholder}" maxlength="5" value="${a.time||''}" ${a.on?'disabled':''} onchange="alarmFieldChange(${a.id})">
-      <input class="alarm-label-inp" id="al-${a.id}" type="text" placeholder="${l.alarmLabelHint}" maxlength="20" value="${a.label||''}" ${a.on?'disabled':''} onchange="alarmFieldChange(${a.id})">
-      <button class="alarm-toggle-btn${a.on?' on':''}" onclick="toggleAlarm(${a.id})">${a.on?l.on:l.off}</button>
-      <button class="alarm-remove-btn" onclick="removeAlarm(${a.id})">×</button>
-      ${a.ringing?`<div class="alarm-ring-bar"><span class="alarm-ring-txt">${l.alarmRinging}</span><button class="alarm-dismiss-btn" onclick="dismissAlarm(${a.id})">${l.dismiss}</button></div>`:''}
-    </div>
-  `).join('');
-  if(alarms.length<5)html+=`<button class="add-alarm-btn" onclick="addAlarm()">+ ${l.addAlarm}</button>`;
-  cont.innerHTML=html;
-}
-
-function addAlarm(){
-  if(alarms.length>=5)return;
-  alarms.push({id:++alarmIdCounter,time:'',label:'',on:false,ringing:false});
-  renderAlarms();saveState();
-}
-function removeAlarm(id){
-  alarms=alarms.filter(a=>a.id!==id);renderAlarms();saveState();
-}
-function alarmFieldChange(id){
-  const a=alarms.find(a=>a.id===id);if(!a)return;
-  const ti=g('at-'+id),li=g('al-'+id);
-  if(ti)a.time=ti.value.trim();if(li)a.label=li.value.trim();
-  saveState();
-}
-function toggleAlarm(id){
-  const a=alarms.find(a=>a.id===id);if(!a)return;
-  if(a.on){dismissAlarm(id);return;}
-  const v=(g('at-'+id)||{value:a.time}).value.trim();
-  const p=v.split(':').map(Number);
-  if(!v||p.some(isNaN)||(p[0]||0)>99||(p[1]||0)>99){
-    s('alarm-err',L[currentLang].invalidTime);setTimeout(()=>s('alarm-err',''),2000);return;
-  }
-  a.time=v;a.label=(g('al-'+id)||{value:a.label}).value.trim();
-  a.on=true;a.ringing=false;
-  renderAlarms();saveState();
-}
-function dismissAlarm(id){
-  const a=alarms.find(a=>a.id===id);if(!a)return;
-  a.on=false;a.ringing=false;
-  renderAlarms();checkFlash();saveState();
-}
-function checkFlash(){document.body.classList.toggle('alarm-flash',alarms.some(a=>a.ringing));}
-
-function checkAlarms(dt){
-  let anyNew=false;
-  alarms.forEach(a=>{
-    if(!a.on||a.ringing)return;
-    const p=a.time.split(':').map(Number);if(p.some(isNaN))return;
-    const[ap=0,ao=0]=p;
-    if(dt.p===ap&&dt.o===ao){a.ringing=true;anyNew=true;}
+function idbGet(key){
+  return new Promise((resolve,reject)=>{
+    const tx = kvdb.transaction(STORE, "readonly");
+    const st = tx.objectStore(STORE);
+    const req = st.get(key);
+    req.onsuccess = ()=>resolve(req.result);
+    req.onerror = ()=>reject(req.error);
   });
-  if(anyNew){
-    playAlarm();renderAlarms();checkFlash();
-    if(!alarmInterval){
-      alarmInterval=setInterval(()=>{
-        if(alarms.some(a=>a.ringing)){playAlarm();document.body.classList.toggle('alarm-flash');}
-        else{clearInterval(alarmInterval);alarmInterval=null;}
-      },800);
-    }
+}
+function idbSet(key, val){
+  return new Promise((resolve,reject)=>{
+    const tx = kvdb.transaction(STORE, "readwrite");
+    const st = tx.objectStore(STORE);
+    const req = st.put(val, key);
+    req.onsuccess = ()=>resolve(true);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+function idbDel(key){
+  return new Promise((resolve,reject)=>{
+    const tx = kvdb.transaction(STORE, "readwrite");
+    const st = tx.objectStore(STORE);
+    const req = st.delete(key);
+    req.onsuccess = ()=>resolve(true);
+    req.onerror = ()=>reject(req.error);
+  });
+}
+async function storageInit(){
+  try{
+    kvdb = await openKV();
+    storageMode = "idb";
+    setStoragePill();
+    return true;
+  }catch(e){
+    console.warn(e);
+    storageMode = "ls";
+    setStoragePill();
+    return false;
   }
 }
-
-// ── STOPWATCH ──
-function msToPerTime(ms){
-  const t=(ms/1000/RSPD)*MPD;
-  return{p:Math.floor(t/100),o:Math.floor(t%100),sub:Math.floor((t%1)*1000)};
-}
-function swToggle(){
-  if(sw.running){sw.elapsed=Date.now()-sw.start;sw.running=false;}
-  else{sw.start=Date.now()-sw.elapsed;sw.running=true;}
-  const l=L[currentLang];
-  s('sw-start-btn',sw.running?l.swStop:l.swStart);
-  g('sw-start-btn').classList.toggle('active',sw.running);
-}
-function swLap(){
-  if(!sw.running&&sw.elapsed===0)return;
-  const cur=sw.running?Date.now()-sw.start:sw.elapsed;
-  const prev=sw.laps.reduce((a,l)=>a+l.ms,0);
-  sw.laps.push({ms:cur-prev,total:cur});
-  renderLaps();
-}
-function swReset(){
-  sw.running=false;sw.elapsed=0;sw.laps=[];
-  s('sw-disp','00:00');s('sw-ms','.000');s('sw-real','00:00:00');
-  const l=L[currentLang];
-  s('sw-start-btn',l.swStart);g('sw-start-btn').classList.remove('active');
-  renderLaps();
-}
-function renderLaps(){
-  const l=L[currentLang],cont=g('laps-list');if(!cont)return;
-  if(sw.laps.length===0){cont.innerHTML='';return;}
-  cont.innerHTML=[...sw.laps].reverse().map((lp,ri)=>{
-    const i=sw.laps.length-1-ri;
-    const pt=msToPerTime(lp.ms),totPt=msToPerTime(lp.total);
-    const rsSec=Math.floor(lp.ms/1000);
-    const rh=Math.floor(rsSec/3600),rm=Math.floor((rsSec%3600)/60),rs=rsSec%60;
-    return`<div class="lap-row">
-      <span class="lap-num">${l.swLapLabel} ${i+1}</span>
-      <span class="lap-pt">${p2(pt.p)}:${p2(pt.o)}.${p3(pt.sub)}</span>
-      <span class="lap-real">${p2(rh)}:${p2(rm)}:${p2(rs)}</span>
-      <span class="lap-pt" style="color:var(--text-dim);font-size:.65rem">${l.swTotalLabel} ${p2(totPt.p)}:${p2(totPt.o)}</span>
-    </div>`;
-  }).join('');
-}
-function updateSWDisplay(){
-  const ms=sw.running?Date.now()-sw.start:sw.elapsed;
-  const pt=msToPerTime(ms);
-  s('sw-disp',`${p2(pt.p)}:${p2(pt.o)}`);s('sw-ms',`.${p3(pt.sub)}`);
-  const rsSec=Math.floor(ms/1000);
-  s('sw-real',`${p2(Math.floor(rsSec/3600))}:${p2(Math.floor((rsSec%3600)/60))}:${p2(rsSec%60)}`);
-}
-
-// ── COUNTDOWN ──
-function cdToggle(){
-  const l=L[currentLang];
-  if(cd.running){
-    cd.remaining=Math.max(0,cd.target-Date.now());
-    cd.running=false;s('cd-start-btn',l.cdStart);g('cd-start-btn').classList.remove('active');
-    return;
-  }
-  let ms;
-  if(cd.remaining>0){ms=cd.remaining;}
-  else{
-    const v=(g('cd-input').value||'').trim();
-    const p=v.split(':').map(Number);
-    if(!v||p.some(isNaN)){s('cd-status','Invalid (PP:OO)');return;}
-    const[pp=0,oo=0]=p;
-    ms=((pp*100+oo)/MPD)*RSPD*1000;
-    if(ms<=0)return;
-  }
-  cd.target=Date.now()+ms;cd.running=true;cd.done=false;
-  s('cd-status','');s('cd-start-btn',l.cdStop);g('cd-start-btn').classList.add('active');
-}
-function cdReset(){
-  cd.running=false;cd.remaining=0;cd.done=false;
-  s('cd-disp','00:00');s('cd-ms','.000');s('cd-status','');
-  s('cd-start-btn',L[currentLang].cdStart);g('cd-start-btn').classList.remove('active');
-}
-function cdPreset(v){g('cd-input').value=v;}
-function updateCDDisplay(){
-  if(!cd.running&&cd.remaining===0&&!cd.done)return;
-  let ms=cd.running?Math.max(0,cd.target-Date.now()):(cd.remaining||0);
-  const pt=msToPerTime(ms);
-  s('cd-disp',`${p2(pt.p)}:${p2(pt.o)}`);s('cd-ms',`.${p3(pt.sub)}`);
-  if(cd.running&&ms<=0){
-    cd.running=false;cd.remaining=0;cd.done=true;
-    s('cd-status',L[currentLang].cdDone);
-    g('cd-status').className='cd-status done';
-    s('cd-start-btn',L[currentLang].cdStart);g('cd-start-btn').classList.remove('active');
-    playAlarm();
-    let cnt=0;const fi=setInterval(()=>{
-      document.body.classList.toggle('alarm-flash');
-      if(++cnt>6){clearInterval(fi);document.body.classList.remove('alarm-flash');}
-    },500);
-  } else if(!cd.running){g('cd-status').className='cd-status';}
-}
-
-// ── TIMEZONE COMPARATOR ──
-function buildTZSelect(){
-  const sel=g('tz-select');if(!sel)return;
-  sel.innerHTML=TZ_PRESETS.map(t=>`<option value="${t.name}">${t.name} (UTC${t.offset>=0?'+':''}${t.offset})</option>`).join('');
-}
-function renderTZ(){
-  const cont=g('tz-list');if(!cont)return;
-  const now=new Date(),dt=getPT();
-  cont.innerHTML=tzList.map((tz,i)=>{
-    const local=new Date(now.getTime()+tz.offset*3600000);
-    const h=local.getUTCHours(),m=local.getUTCMinutes(),sec=local.getUTCSeconds();
-    const sign=tz.offset>=0?'+':'';
-    return`<div class="tz-row">
-      <div class="tz-name">${tz.name}</div>
-      <div class="tz-offset">UTC${sign}${tz.offset}</div>
-      <div class="tz-time">${p2(h)}:${p2(m)}:${p2(sec)}</div>
-      <div class="tz-pt">${p2(dt.p)}:${p2(dt.o)}</div>
-      <button class="tz-remove-btn" onclick="removeTZ(${i})">×</button>
-    </div>`;
-  }).join('');
-}
-function updateTZ(){renderTZ();}
-function removeTZ(i){tzList.splice(i,1);renderTZ();saveState();}
-function addTZPreset(){
-  const sel=g('tz-select');if(!sel)return;
-  const name=sel.value;
-  const preset=TZ_PRESETS.find(t=>t.name===name);
-  if(preset&&!tzList.find(t=>t.name===preset.name)){
-    tzList.push({...preset});renderTZ();saveState();
+async function kvLoad(){
+  if(storageMode==="idb"){
+    const raw = await idbGet(KV_KEY);
+    return raw || null;
+  }else{
+    return localStorage.getItem(FALLBACK_KEY);
   }
 }
-function addTZCustom(){
-  const nameEl=g('tz-cust-name'),offEl=g('tz-cust-offset');
-  const name=(nameEl.value||'').trim()||'Custom';
-  const offset=parseFloat(offEl.value||'0');
-  if(isNaN(offset)||offset<-12||offset>14)return;
-  if(tzList.length<12){tzList.push({name,offset});renderTZ();saveState();}
-  nameEl.value='';offEl.value='';
+async function kvSave(raw){
+  if(storageMode==="idb") await idbSet(KV_KEY, raw);
+  else localStorage.setItem(FALLBACK_KEY, raw);
+}
+async function kvReset(){
+  if(storageMode==="idb") await idbDel(KV_KEY);
+  else localStorage.removeItem(FALLBACK_KEY);
 }
 
-// ── EVENTS ──
-function evtKey(y,m,d){return`${y}-${m}-${d}`;}
-function getEvts(y,m,d){return(events[evtKey(y,m,d)]||[]).map(e=>({...e}));}
+function defaultDB(){
+  const y = new Date().getFullYear();
+  return {
+    meta: {version:2, createdAt: new Date().toISOString()},
+    company: {
+      name:"", org:"",
+      fyStart:`${y}-01-01`,
+      fyEnd:`${y}-12-31`,
+      defaultSeries:"A",
+      nextVoucher: 1,
+      lockUntil: ""
+    },
+    accounts: [],
+    vouchers: [],
+    seriesNext: {},
+    audit: []
+  };
+}
+let db = defaultDB();
+let saveTimer = null;
 
-function openEvtModal(year,month,day){
-  editEvtCtx={year,month,day,evts:getEvts(year,month,day)};
-  let title;
-  if(month&&day){
-    const gd=newToGreg(year,month,day);
-    title=`${L[currentLang].gregShort(gd.getUTCDate(),gd.getUTCMonth())} — ${MNAMES[month-1]} ${day} (${WEEKDAYS_LONG[(day-1)%7]})`;
-  }else{title='World Day / Leap Day';}
-  s('evt-modal-title',title);
-  renderEvtModal();
-  g('evt-modal').classList.add('open');
+function logEvent(action, detail){
+  db.audit = db.audit || [];
+  db.audit.unshift({ts: new Date().toISOString(), action, detail});
+  if(db.audit.length > 2000) db.audit.length = 2000;
 }
-function closeEvtModal(){g('evt-modal').classList.remove('open');}
-function evtModalOutsideClick(e){if(e.target===g('evt-modal'))closeEvtModal();}
-
-function renderEvtModal(){
-  const cont=g('evt-modal-body');
-  const evts=editEvtCtx.evts;
-  let html=evts.map((ev,i)=>{
-    const colorDots=EVT_COLORS.map(c=>`<div class="evt-color-dot${ev.color===c?' sel':''}" style="background:${c}" onclick="setEvtColor(${i},'${c}')"></div>`).join('');
-    return`<div class="evt-item">
-      <div class="evt-color-row">${colorDots}</div>
-      <input class="evt-text-inp" style="border-color:${ev.color||EVT_COLORS[0]}" type="text" value="${ev.text||''}" placeholder="Event..." oninput="setEvtText(${i},this.value)">
-      <button class="evt-del-btn" onclick="delEvt(${i})">×</button>
-    </div>`;
-  }).join('');
-  html+=`<button class="evt-add-item-btn" onclick="addEvtItem()">+ ${L[currentLang].evtAdd}</button>`;
-  cont.innerHTML=html;
+function scheduleSave(){
+  if(saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(async ()=>{
+    try{ await kvSave(JSON.stringify(db)); setStatus("Sparat","ok"); }
+    catch(e){ console.error(e); setStatus("Kunde inte spara.","err"); }
+  }, 180);
 }
-function addEvtItem(){editEvtCtx.evts.push({text:'',color:EVT_COLORS[0]});renderEvtModal();}
-function delEvt(i){editEvtCtx.evts.splice(i,1);renderEvtModal();}
-function setEvtColor(i,c){editEvtCtx.evts[i].color=c;renderEvtModal();}
-function setEvtText(i,v){editEvtCtx.evts[i].text=v;}
-function saveEvts(){
-  const{year,month,day,evts}=editEvtCtx;
-  const valid=evts.filter(e=>e.text.trim());
-  const k=evtKey(year,month,day);
-  if(valid.length===0)delete events[k];else events[k]=valid;
-  saveState();renderCalendar();closeEvtModal();
-}
-
-// ── CALENDAR math ──
-function isLeap(y){return(y%4===0&&y%100!==0)||y%400===0;}
-function dayOfYear(d){return Math.floor((d.getTime()-Date.UTC(d.getUTCFullYear(),0,0))/864e5);}
-function getNewDate(date){
-  const doy=dayOfYear(date),y=date.getUTCFullYear();
-  if(doy<=364){const m=Math.ceil(doy/28),d=((doy-1)%28)+1,wd=(d-1)%7;return{year:y,month:m,day:d,wd,isWorldDay:false,isLeapDay:false};}
-  const isLeapDay=isLeap(y)&&doy===366;
-  return{year:y,month:null,day:null,wd:null,isWorldDay:true,isLeapDay};
-}
-function newToGreg(year,month,day){const d=new Date(Date.UTC(year,0,1));d.setUTCDate(d.getUTCDate()+(month-1)*28+day-1);return d;}
-function specialDayGreg(year,isLD){const d=new Date(Date.UTC(year,0,1));d.setUTCDate(d.getUTCDate()+(isLD?365:364));return d;}
-
-function goToToday(){
-  const nd=getNewDate(new Date());
-  calViewYear=nd.year;calViewMonth=nd.isWorldDay?(nd.isLeapDay?15:14):nd.month;
-  setCalView('month');
-}
-
-function setCalView(v){
-  calView=v;
-  g('vbtn-month').classList.toggle('active',v==='month');
-  g('vbtn-year').classList.toggle('active',v==='year');
-  g('cal-month-view').style.display=v==='month'?'':'none';
-  g('cal-year-view').style.display=v==='year'?'':'none';
-  renderCalendar();
-}
-function calNav(dir){
-  if(calView==='year'){calViewYear+=dir;renderCalendar();return;}
-  const max=isLeap(calViewYear)?15:14;
-  calViewMonth+=dir;
-  if(calViewMonth<1){calViewYear--;calViewMonth=isLeap(calViewYear)?15:14;}
-  else if(calViewMonth>max){calViewYear++;calViewMonth=1;}
-  renderCalendar();
-}
-function jumpToMonth(m){calViewMonth=m;setCalView('month');}
-
-function renderCalendar(){
-  const l=L[currentLang],today=getNewDate(new Date());
-  if(calView==='year'){renderYearView(l,today);return;}
-  let navT;
-  if(calViewMonth<=13)navT=MNAMES[calViewMonth-1].toUpperCase();
-  else if(calViewMonth===14)navT=l.worldDay;
-  else navT=l.leapDay;
-  s('cal-nav-title',navT);s('cal-nav-year',String(calViewYear));
-  const wdEl=g('cal-weekdays'),wkEl=g('cal-weeks');
-  if(calViewMonth>=14){
-    wdEl.innerHTML='';
-    const isLD=calViewMonth===15;
-    const gd=specialDayGreg(calViewYear,isLD);
-    const wdG=specialDayGreg(calViewYear,false);
-    const ldG=isLeap(calViewYear)?specialDayGreg(calViewYear,true):null;
-    wkEl.innerHTML=`<div class="wd-card">
-      <div class="wd-icon">${isLD?'✨':'🌍'}</div>
-      <div class="wd-title">${isLD?l.leapDay:l.worldDay}</div>
-      <div class="wd-year">${calViewYear}</div>
-      <div class="wd-greg">${l.gregDate(gd.getUTCDate(),gd.getUTCMonth(),calViewYear)}</div>
-      <div class="wd-desc">${isLD?l.ldDesc:l.wdDesc}</div>
-      <div class="wd-dates-box">
-        <div class="wd-dates-row"><span class="wd-dates-icon">🌍</span><span class="wd-dates-label">${l.worldDay}</span><span class="wd-dates-val">${l.gregShort(wdG.getUTCDate(),wdG.getUTCMonth())}</span></div>
-        ${isLeap(calViewYear)?`<div class="wd-dates-row"><span class="wd-dates-icon">✨</span><span class="wd-dates-label">${l.leapDay}</span><span class="wd-dates-val">${l.gregShort(ldG.getUTCDate(),ldG.getUTCMonth())}</span></div>`:`<div class="wd-dates-note">${l.notLeap}</div>`}
-      </div>
-    </div>`;
-    return;
+async function loadOrInitDB(){
+  const raw = await kvLoad();
+  if(raw){
+    try{
+      db = JSON.parse(raw);
+      if(!db.meta) db.meta = {version:2};
+      if(!db.audit) db.audit = [];
+      return;
+    }catch(e){ console.error(e); }
   }
-  wdEl.innerHTML=WEEKDAYS_SHORT.map((w,i)=>`<div class="cal-wd-cell${i>=5?' weekend':''}">${w}</div>`).join('');
-  let html='';
-  for(let d=1;d<=28;d++){
-    const wd=(d-1)%7;
-    const isToday=calViewYear===today.year&&calViewMonth===today.month&&d===today.day;
-    const gd=newToGreg(calViewYear,calViewMonth,d);
-    const dayEvts=getEvts(calViewYear,calViewMonth,d);
-    const dots=dayEvts.slice(0,4).map(e=>`<div class="cal-evt-dot" style="background:${e.color}"></div>`).join('');
-    html+=`<div class="cal-cell${isToday?' today':''}${wd>=5?' weekend':''}" onclick="openEvtModal(${calViewYear},${calViewMonth},${d})">
-      <div class="cal-day-num">${d}</div>
-      <div class="cal-day-greg">${l.gregShort(gd.getUTCDate(),gd.getUTCMonth())}</div>
-      ${dots?`<div class="cal-evt-dots">${dots}</div>`:''}
-    </div>`;
+  const v1 = localStorage.getItem(V1_KEY);
+  if(v1){
+    try{
+      const old = JSON.parse(v1);
+      db = defaultDB();
+      if(old.company){
+        db.company.name = old.company.name || "";
+        db.company.org = old.company.org || "";
+        db.company.fyStart = old.company.fyStart || db.company.fyStart;
+        db.company.fyEnd = old.company.fyEnd || db.company.fyEnd;
+        db.company.defaultSeries = old.company.defaultSeries || "A";
+        db.company.nextVoucher = old.company.nextVoucher || 1;
+      }
+      db.accounts = Array.isArray(old.accounts)? old.accounts : [];
+      db.vouchers = Array.isArray(old.vouchers)? old.vouchers : [];
+      db.seriesNext = old.seriesNext || {};
+      logEvent("migrate", "Importerade data från v1 localStorage.");
+      await kvSave(JSON.stringify(db));
+      setStatus("Migrerad från v1.","ok");
+      return;
+    }catch(e){ console.warn("V1 migration failed", e); }
   }
-  wkEl.innerHTML=html;
+  db = defaultDB();
+  await kvSave(JSON.stringify(db));
 }
 
-function renderYearView(l,today){
-  s('cal-nav-title',String(calViewYear));s('cal-nav-year','');
-  const leap=isLeap(calViewYear);let html='';
-  for(let m=1;m<=13;m++){
-    const hasToday=today.year===calViewYear&&today.month===m;
-    html+=`<div class="cal-yr-month${hasToday?' has-today':''}" onclick="jumpToMonth(${m})">
-      <div class="cal-yr-name">${MNAMES[m-1].toUpperCase()}</div>
-      <div class="cal-yr-mini">`;
-    WEEKDAYS_SHORT.forEach((w,i)=>{html+=`<div class="cal-yr-cell hdr${i>=5?' wknd':''}">${w[1]}</div>`;});
-    for(let d=1;d<=28;d++){
-      const wd=(d-1)%7,isToday=hasToday&&d===today.day;
-      const hasEvt=getEvts(calViewYear,m,d).length>0;
-      html+=`<div class="cal-yr-cell${isToday?' today-dot':''}${wd>=5&&!isToday?' wknd':''}${hasEvt&&!isToday?' has-evt':''}">${d}</div>`;
-    }
-    html+=`</div></div>`;
-  }
-  const wdG=specialDayGreg(calViewYear,false);
-  html+=`<div class="cal-yr-special" onclick="jumpToMonth(14)"><div class="cal-yr-s-icon">🌍</div><div class="cal-yr-s-name">${l.worldDay}</div><div class="cal-yr-s-greg">${l.gregShort(wdG.getUTCDate(),wdG.getUTCMonth())}</div></div>`;
-  if(leap){const ldG=specialDayGreg(calViewYear,true);html+=`<div class="cal-yr-special" onclick="jumpToMonth(15)"><div class="cal-yr-s-icon">✨</div><div class="cal-yr-s-name">${l.leapDay}</div><div class="cal-yr-s-greg">${l.gregShort(ldG.getUTCDate(),ldG.getUTCMonth())}</div></div>`;}
-  g('cal-year-view').innerHTML=html;
+function nowISODate(){
+  const d = new Date();
+  const pad=(n)=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+function toNumber(v){
+  if(v===null || v===undefined || v==="") return 0;
+  const n = Number(String(v).replace(",", "."));
+  return isFinite(n) ? n : 0;
+}
+function money(n){ return (Math.round((n+Number.EPSILON)*100)/100).toFixed(2); }
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, c=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+}
+function escapeAttr(s){ return escapeHtml(s).replaceAll("\n"," "); }
+function typeLabel(t){
+  return t==="asset"?"Tillgång"
+    : t==="liability"?"Skuld"
+    : t==="equity"?"Eget kapital"
+    : t==="revenue"?"Intäkt"
+    : t==="expense"?"Kostnad"
+    : String(t||"");
+}
+function sumVoucher(v){
+  const sumD = (v.lines||[]).reduce((s,l)=>s+toNumber(l.debit),0);
+  const sumC = (v.lines||[]).reduce((s,l)=>s+toNumber(l.credit),0);
+  return {debit:sumD, credit:sumC, diff:sumD-sumC};
+}
+function withinLock(date){
+  const lock = db.company.lockUntil;
+  return lock && date && date <= lock;
+}
+function assertNotLocked(date){
+  if(withinLock(date)) throw new Error(`Period låst t.o.m. ${db.company.lockUntil}. Du försöker bokföra ${date}.`);
+}
+function downloadText(filename, text, mime="text/plain;charset=utf-8"){
+  const blob = new Blob([text], {type:mime});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1500);
 }
 
-function updateCalToday(){
-  const l=L[currentLang],nd=getNewDate(new Date()),now=new Date();
-  if(nd.isWorldDay){s('ct-month',nd.isLeapDay?l.leapDay:l.worldDay);s('ct-day','🌍');s('ct-wd','');}
-  else{s('ct-month',MNAMES[nd.month-1].toUpperCase());s('ct-day',nd.day);s('ct-wd',WEEKDAYS_LONG[nd.wd]);}
-  s('ct-year',nd.year);
-  s('ct-greg',l.gregDate(now.getUTCDate(),now.getUTCMonth(),now.getUTCFullYear()));
+function showTab(name){
+  document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("active", b.dataset.tab===name));
+  document.querySelectorAll("main section[id^='tab-']").forEach(s=>s.classList.add("hidden"));
+  $("tab-"+name).classList.remove("hidden");
+  if(name==="start") renderStart();
+  if(name==="foretag") renderCompany();
+  if(name==="kontoplan") renderAccounts();
+  if(name==="verifikat") renderVouchers();
+  if(name==="rapporter") renderReports();
+  if(name==="importexport") renderImportExport();
+  if(name==="logg") renderLog();
 }
-
-// ── DURATION CALCULATOR ──
-const SPAN_PRESETS=[60,300,900,1800,3600,14400,28800,86400];
-
-function renderSpanPresets(){
-  const cont=g('span-presets');if(!cont)return;
-  const l=L[currentLang];
-  cont.innerHTML=SPAN_PRESETS.map((sec,i)=>`
-    <button class="span-preset" onclick="setSpanPreset(${sec})">${l.spanPresets[i]}</button>
-  `).join('');
-  const se=g('span-empty');if(se)se.textContent=l.spanHint;
-  const sre=g('span-rev-empty');if(sre)sre.textContent=l.spanRevHint;
-  s('span-dir-a',l.spanDirA);s('span-dir-b',l.spanDirB);
-  s('span-lbl-pp',l.spanLblPP);s('span-lbl-oo',l.spanLblOO);s('span-lbl-sub',l.spanLblSub);
-}
-
-function setSpanPreset(totalSec){
-  const h=Math.floor(totalSec/3600);
-  const m=Math.floor((totalSec%3600)/60);
-  const s2=totalSec%60;
-  g('span-h').value=h||'';
-  g('span-m').value=m||'';
-  g('span-s').value=s2||'';
-  calcSpan();
-}
-
-function calcSpan(){
-  const l=L[currentLang];
-  const h=parseFloat(g('span-h').value)||0;
-  const m=parseFloat(g('span-m').value)||0;
-  const sec=parseFloat(g('span-s').value)||0;
-  const totalSec=h*3600+m*60+sec;
-
-  const res=g('span-result'),emp=g('span-empty');
-  if(totalSec<=0){res.style.display='none';emp.style.display='';return;}
-  res.style.display='';emp.style.display='none';
-
-  const totalMoments=(totalSec/RSPD)*MPD;
-  const wholePeriods=Math.floor(totalMoments/100);
-  const wholeRemainder=Math.floor(totalMoments%100);
-  const subMoments=Math.floor((totalMoments%1)*1000);
-  const totalMomentsWhole=Math.floor(totalMoments);
-  const realDays=totalSec/86400;
-
-  s('span-res-main',`${wholePeriods} ${l.spanPeriods}  ${p2(wholeRemainder)} ${l.spanMoments}`);
-  s('span-res-sub',`.${p3(subMoments)} ${l.spanSubMoments}`);
-
-  g('span-breakdown').innerHTML=`
-    <div class="span-bd-item">
-      <div class="span-bd-val">${wholePeriods}</div>
-      <div class="span-bd-lbl">${l.spanBreakPeriods}</div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${fmtNum(totalMomentsWhole)}</div>
-      <div class="span-bd-lbl">${l.spanBreakMoments}</div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${fmtNum(Math.round(totalSec))}</div>
-      <div class="span-bd-lbl">${l.spanBreakSec}</div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${realDays>=1?realDays.toFixed(4):totalSec>=60?(totalSec/60).toFixed(2)+' min':totalSec.toFixed(1)+' s'}</div>
-      <div class="span-bd-lbl">${realDays>=1?l.spanBreakDays:totalSec>=60?'REAL MINUTES':'REAL SECONDS'}</div>
-    </div>
-  `;
-}
-
-function calcSpanRev(){
-  const l=L[currentLang];
-  const pp=parseFloat(g('span-pp').value)||0;
-  const oo=parseFloat(g('span-oo').value)||0;
-  const sub=parseFloat(g('span-sub').value)||0;
-
-  const res=g('span-rev-result'),emp=g('span-rev-empty');
-  if(pp===0&&oo===0&&sub===0){res.style.display='none';emp.style.display='';return;}
-  res.style.display='';emp.style.display='none';
-
-  // total moments (with fractional from sub)
-  const totalMoments = pp*100 + oo + sub/1000;
-  // convert to real seconds: moments / MPD * RSPD
-  const totalSec = (totalMoments / MPD) * RSPD;
-
-  const totalSecInt = Math.floor(totalSec);
-  const hours   = Math.floor(totalSecInt / 3600);
-  const minutes = Math.floor((totalSecInt % 3600) / 60);
-  const seconds = totalSecInt % 60;
-  const ms      = Math.round((totalSec - totalSecInt) * 1000);
-
-  // main display: H:MM:SS.mmm
-  const mainStr = `${hours}h ${p2(minutes)}m ${p2(seconds)}s`;
-  const subStr  = `.${p3(ms)}`;
-
-  s('span-rev-main', mainStr);
-  s('span-rev-sub', subStr);
-
-  const realDays = totalSec / 86400;
-
-  g('span-rev-breakdown').innerHTML=`
-    <div class="span-bd-item">
-      <div class="span-bd-val">${hours}</div>
-      <div class="span-bd-lbl">${l.spanRevBreakH}</div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${hours*60+minutes}</div>
-      <div class="span-bd-lbl">${l.spanRevBreakM}</div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${fmtNum(totalSecInt)}</div>
-      <div class="span-bd-lbl">${l.spanRevBreakSec}</div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${realDays>=1?realDays.toFixed(4):realDays>=1/1440?(realDays*1440).toFixed(2)+' min':totalSec.toFixed(1)+' s'}</div>
-      <div class="span-bd-lbl">${realDays>=1?l.spanBreakDays:realDays>=1/1440?'REAL MINUTES':'REAL SECONDS'}</div>
-    </div>
-  `;
-}
-
-// parse HH:MM:SS or HH:MM → total seconds, null on fail
-function parseRealTime(str){
-  const p=str.trim().split(':').map(Number);
-  if(p.some(isNaN)||p.length<2)return null;
-  const[h=0,m=0,sec=0]=p;
-  if(h>23||m>59||sec>59)return null;
-  return h*3600+m*60+sec;
-}
-// parse PP:OO → total moments (float), null on fail
-function parsePeriodTime(str){
-  const p=str.trim().split(':').map(Number);
-  if(p.some(isNaN)||p.length<2)return null;
-  const[pp=0,oo=0]=p;
-  if(pp>99||oo>99)return null;
-  return pp*100+oo;
-}
-
-// sec → "PP:OO"
-function secToPT(sec){
-  const t=(sec/RSPD)*MPD;
-  return`${p2(Math.floor(t/100))}:${p2(Math.floor(t%100))}`;
-}
-// moments → "HH:MM:SS"
-function momToReal(mom){
-  const sec=Math.floor((mom/MPD)*RSPD);
-  return`${p2(Math.floor(sec/3600))}:${p2(Math.floor((sec%3600)/60))}:${p2(sec%60)}`;
-}
-
-function calcRange(){
-  const l=L[currentLang];
-  const fromSec=parseRealTime(g('rng-a-from').value);
-  const toSec  =parseRealTime(g('rng-a-to').value);
-  const res=g('rng-result'),emp=g('rng-empty');
-  if(fromSec===null||toSec===null){res.style.display='none';emp.style.display='';emp.textContent=l.rngHintA;return;}
-
-  const overnight=g('rng-overnight').checked;
-  let diffSec=toSec-fromSec;
-  if(overnight||diffSec<0)diffSec+=86400;
-
-  // Convert input times to UTC seconds for period calculation
-  const off=rngUseLocal?localOffsetSec():0;
-  const fromUTC=(fromSec-off+86400)%86400;
-  const toUTC  =(toSec  -off+86400)%86400;
-
-  const totalMoments=(diffSec/RSPD)*MPD;
-  const wholePeriods=Math.floor(totalMoments/100);
-  const rem=Math.floor(totalMoments%100);
-  const sub=Math.floor((totalMoments%1)*1000);
-
-  // format endpoint display
-  const fH=Math.floor(fromSec/3600),fM=Math.floor((fromSec%3600)/60),fS=fromSec%60;
-  const tH=Math.floor(toSec/3600),  tM=Math.floor((toSec%3600)/60),  tS=toSec%60;
-  const fromReal=`${p2(fH)}:${p2(fM)}:${p2(fS)}`;
-  const toReal  =`${p2(tH)}:${p2(tM)}:${p2(tS)}`;
-  const fromPT  =secToPT(fromUTC);
-  const toPT    =secToPT(toUTC);
-
-  res.style.display='';emp.style.display='none';
-  s('rng-res-main',`${wholePeriods} ${l.spanPeriods}  ${p2(rem)} ${l.spanMoments}`);
-  s('rng-res-sub',`.${p3(sub)} ${l.spanSubMoments}`);
-
-  const h=Math.floor(diffSec/3600),m=Math.floor((diffSec%3600)/60),sec=diffSec%60;
-  g('rng-breakdown').innerHTML=`
-    <div class="rng-endpoints" style="grid-column:1/-1">
-      <div class="rng-ep-row">
-        <span class="rng-ep-tag">${l.rngFrom}</span>
-        <span class="rng-ep-real">${fromReal}</span>
-        <span class="rng-ep-arrow">→</span>
-        <span class="rng-ep-pt">${fromPT}</span>
-      </div>
-      <div class="rng-ep-row">
-        <span class="rng-ep-tag">${l.rngTo}</span>
-        <span class="rng-ep-real">${toReal}</span>
-        <span class="rng-ep-arrow">→</span>
-        <span class="rng-ep-pt">${toPT}</span>
-      </div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${wholePeriods}:${p2(rem)}</div>
-      <div class="span-bd-lbl">${l.spanBreakPeriods} : ${l.spanMoments}</div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${fmtNum(Math.floor(totalMoments))}</div>
-      <div class="span-bd-lbl">${l.spanBreakMoments}</div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${p2(h)}:${p2(m)}:${p2(sec)}</div>
-      <div class="span-bd-lbl">H : M : S</div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${fmtNum(diffSec)}</div>
-      <div class="span-bd-lbl">${l.spanBreakSec}</div>
-    </div>
-  `;
-}
-
-function calcRangeRev(){
-  const l=L[currentLang];
-  const fromMom=parsePeriodTime(g('rng-b-from').value);
-  const toMom  =parsePeriodTime(g('rng-b-to').value);
-  const res=g('rng-rev-result'),emp=g('rng-rev-empty');
-  if(fromMom===null||toMom===null){res.style.display='none';emp.style.display='';emp.textContent=l.rngHintB;return;}
-
-  const overnight=g('rng-b-overnight').checked;
-  let diffMom=toMom-fromMom;
-  if(overnight||diffMom<0)diffMom+=10000;
-
-  const totalSec=(diffMom/MPD)*RSPD;
-  const totalSecInt=Math.floor(totalSec);
-  const hours=Math.floor(totalSecInt/3600);
-  const minutes=Math.floor((totalSecInt%3600)/60);
-  const seconds=totalSecInt%60;
-  const ms=Math.round((totalSec-totalSecInt)*1000);
-
-  // format input times for display
-  const fromPTstr=`${p2(Math.floor(fromMom/100))}:${p2(Math.floor(fromMom%100))}`;
-  const toPTstr  =`${p2(Math.floor(toMom/100))}:${p2(Math.floor(toMom%100))}`;
-  const fromRealStr=momToReal(fromMom);
-  const toRealStr  =momToReal(toMom);
-
-  res.style.display='';emp.style.display='none';
-  s('rng-rev-main',`${hours}h ${p2(minutes)}m ${p2(seconds)}s`);
-  s('rng-rev-sub',`.${p3(ms)}`);
-
-  const pp=Math.floor(diffMom/100),oo=Math.floor(diffMom%100);
-  g('rng-rev-breakdown').innerHTML=`
-    <div class="rng-endpoints" style="grid-column:1/-1">
-      <div class="rng-ep-row">
-        <span class="rng-ep-tag">${l.rngFrom}</span>
-        <span class="rng-ep-real" style="color:var(--accent4)">${fromPTstr}</span>
-        <span class="rng-ep-arrow">→</span>
-        <span class="rng-ep-pt" style="color:var(--accent)">${fromRealStr}</span>
-      </div>
-      <div class="rng-ep-row">
-        <span class="rng-ep-tag">${l.rngTo}</span>
-        <span class="rng-ep-real" style="color:var(--accent4)">${toPTstr}</span>
-        <span class="rng-ep-arrow">→</span>
-        <span class="rng-ep-pt" style="color:var(--accent)">${toRealStr}</span>
-      </div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${pp}:${p2(oo)}</div>
-      <div class="span-bd-lbl">P : M SPAN</div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${hours*60+minutes}</div>
-      <div class="span-bd-lbl">${l.spanRevBreakM}</div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${p2(hours)}:${p2(minutes)}:${p2(seconds)}</div>
-      <div class="span-bd-lbl">H : M : S</div>
-    </div>
-    <div class="span-bd-item">
-      <div class="span-bd-val">${fmtNum(totalSecInt)}</div>
-      <div class="span-bd-lbl">${l.spanRevBreakSec}</div>
-    </div>
-  `;
-}
-
-// ── Fullscreen ──
-function toggleFS(){
-  if(!document.fullscreenElement)document.documentElement.requestFullscreen();
-  else document.exitFullscreen();
-}
-document.addEventListener('fullscreenchange',()=>{
-  const fs=!!document.fullscreenElement;
-  s('btn-fs',fs?'✕':'⛶');
-  g('btn-fs').dataset.tip=fs?L[currentLang].exitFs:L[currentLang].fs;
+$("tabs").addEventListener("click",(e)=>{
+  const btn = e.target.closest("button[data-tab]");
+  if(btn) showTab(btn.dataset.tab);
 });
 
-// ── Init ──
-loadState();
-applyTheme();
-buildTZSelect();
-// Apply stored longitude to input
-if(longitude!==null)g('lon-input').value=longitude;
-updateSolarInfo();
-renderCalendar();
-updateCalToday();
-renderAlarms();
-renderTZ();
-renderSpanPresets();
-// Apply lang (sets all text)
-setLang(currentLang);
-update();
-setInterval(update,50);
-setInterval(()=>{updateCalToday();renderCalendar();},60000);
+function basMinimalAccounts(){
+  return [
+    {no:"1930", name:"Företagskonto / bank", type:"asset", vat:"NONE"},
+    {no:"1910", name:"Kassa", type:"asset", vat:"NONE"},
+    {no:"1510", name:"Kundfordringar", type:"asset", vat:"NONE"},
+    {no:"2440", name:"Leverantörsskulder", type:"liability", vat:"NONE"},
+    {no:"2010", name:"Eget kapital", type:"equity", vat:"NONE"},
+    {no:"2018", name:"Egna insättningar", type:"equity", vat:"NONE"},
+    {no:"3010", name:"Försäljning", type:"revenue", vat:"NONE"},
+    {no:"2611", name:"Utgående moms 25%", type:"liability", vat:"OUT25"},
+    {no:"2621", name:"Utgående moms 12%", type:"liability", vat:"OUT12"},
+    {no:"2631", name:"Utgående moms 6%", type:"liability", vat:"OUT6"},
+    {no:"2641", name:"Ingående moms 25%", type:"asset", vat:"IN25"},
+    {no:"2645", name:"Ingående moms 12%", type:"asset", vat:"IN12"},
+    {no:"2647", name:"Ingående moms 6%", type:"asset", vat:"IN6"},
+    {no:"4010", name:"Varuinköp", type:"expense", vat:"NONE"},
+    {no:"5460", name:"Förbrukningsmaterial", type:"expense", vat:"NONE"},
+    {no:"6071", name:"Representation, avdragsgill", type:"expense", vat:"NONE"},
+  ];
+}
+function guessTypeFromBAS(no){
+  const n = Number(no);
+  if(n>=1000 && n<2000) return "asset";
+  if(n>=2000 && n<3000) return "liability";
+  if(n>=3000 && n<4000) return "revenue";
+  if(n>=4000 && n<9000) return "expense";
+  return "asset";
+}
+function guessVatFromBAS(no){
+  const n = Number(no);
+  if(n===2611) return "OUT25";
+  if(n===2621) return "OUT12";
+  if(n===2631) return "OUT6";
+  if(n===2641) return "IN25";
+  if(n===2645) return "IN12";
+  if(n===2647) return "IN6";
+  return "NONE";
+}
 
-// Init calendar to today
-const _nd=getNewDate(new Date());
-calViewYear=_nd.year;calViewMonth=_nd.isWorldDay?(_nd.isLeapDay?15:14):_nd.month;
-renderCalendar();
+function renderStart(){
+  const c = db.company || {};
+  const totalAcc = db.accounts.length;
+  const totalV = db.vouchers.length;
+  const fy = (c.fyStart && c.fyEnd) ? `${c.fyStart} → ${c.fyEnd}` : "—";
+  $("overview").innerHTML = `
+    <div>Företag</div><div>${escapeHtml(c.name || "—")}</div>
+    <div>Org.nr</div><div>${escapeHtml(c.org || "—")}</div>
+    <div>Räkenskapsår</div><div>${escapeHtml(fy)}</div>
+    <div>Periodlås</div><div>${escapeHtml(c.lockUntil || "—")}</div>
+    <div>Konton</div><div>${totalAcc}</div>
+    <div>Verifikat</div><div>${totalV}</div>
+    <div>Standardserie</div><div>${escapeHtml(c.defaultSeries || "A")}</div>
+  `;
+  const issues = [];
+  if(!c.name) issues.push("Saknar företagsnamn.");
+  if(!c.fyStart || !c.fyEnd) issues.push("Saknar räkenskapsår.");
+  if(totalAcc===0) issues.push("Kontoplan saknas.");
+  const unbal = db.vouchers.filter(v=>Math.abs(sumVoucher(v).diff) > 0.00001);
+  if(unbal.length) issues.push(`Det finns ${unbal.length} obalanserade verifikat (bör vara 0).`);
+  const lockedInData = c.lockUntil ? db.vouchers.filter(v=>v.date<=c.lockUntil).length : 0;
+  $("quickChecks").innerHTML = issues.length
+    ? `<div class="err">⚠ ${issues.map(escapeHtml).join("<br>")}</div>`
+    : `<div class="oktxt">✓ Ser bra ut.</div>` +
+      (c.lockUntil ? `<div class="muted" style="margin-top:8px">Låst t.o.m. ${escapeHtml(c.lockUntil)} (verifikat i låst period: ${lockedInData}).</div>` : "");
+}
+$("btnPrefill").addEventListener("click", ()=>{
+  if(db.accounts.length){ setStatus("Kontoplan finns redan.","err"); return; }
+  db.accounts = basMinimalAccounts();
+  logEvent("accounts.prefill", "Skapade BAS-minimal kontoplan.");
+  scheduleSave();
+  setStatus("BAS-minimal kontoplan skapad.","ok");
+  renderStart();
+});
+function suggestNextNo(series){
+  series = (series||"A").toUpperCase();
+  const next = (db.seriesNext && db.seriesNext[series]) ? db.seriesNext[series] : null;
+  if(next) return next;
+  const max = db.vouchers.filter(v=>String(v.series).toUpperCase()===series).reduce((m,v)=>Math.max(m, Number(v.no||0)), 0);
+  return max>0 ? (max+1) : (db.company.nextVoucher||1);
+}
+function addVoucher({date,series,no,text,lines}){
+  series = (series||"A").toUpperCase();
+  const usedNo = no ?? suggestNextNo(series);
+  db.vouchers.push({ id: crypto.randomUUID(), date, series, no: usedNo, text, lines });
+  db.seriesNext = db.seriesNext || {};
+  db.seriesNext[series] = Math.max(usedNo+1, db.seriesNext[series]||1);
+}
+$("btnDemo").addEventListener("click", ()=>{
+  if(db.accounts.length===0) db.accounts = basMinimalAccounts();
+  const today = nowISODate();
+  try{ assertNotLocked(today); }catch(e){ setStatus(e.message,"err"); return; }
+  addVoucher({ date: today, series: (db.company.defaultSeries||"A"), no:null, text:"Insättning på bank",
+    lines:[ {account:"1930",debit:10000,credit:0}, {account:"2018",debit:0,credit:10000} ]});
+  addVoucher({ date: today, series: (db.company.defaultSeries||"A"), no:null, text:"Inköp förbrukningsmaterial inkl moms 25%",
+    lines:[ {account:"5460",debit:800,credit:0}, {account:"2641",debit:200,credit:0}, {account:"1930",debit:0,credit:1000} ]});
+  logEvent("vouchers.demo", "Skapade 2 demo-verifikat.");
+  scheduleSave();
+  setStatus("Demo-verifikat skapade.","ok");
+  renderStart();
+});
+$("btnReset").addEventListener("click", async ()=>{
+  if(!confirm("Radera ALL data i den här appen?")) return;
+  await kvReset();
+  db = defaultDB();
+  await kvSave(JSON.stringify(db));
+  setStatus("All data raderad.","ok");
+  showTab("start");
+});
+$("btnBackupFile").addEventListener("click", ()=>{
+  downloadText("bokforing-backup.json", JSON.stringify(db,null,2), "application/json;charset=utf-8");
+  logEvent("export.json", "Exporterade JSON-backup (fil).");
+  scheduleSave();
+});
+$("btnSIEFile").addEventListener("click", ()=>{
+  downloadText("bokforing.sie", generateSIE(db), "text/plain;charset=utf-8");
+  logEvent("export.sie", "Exporterade SIE (fil).");
+  scheduleSave();
+});
+$("btnPrintStart").addEventListener("click", ()=>window.print());
+
+function renderCompany(){
+  const c = db.company;
+  $("cName").value = c.name || "";
+  $("cOrg").value = c.org || "";
+  $("fyStart").value = c.fyStart || "";
+  $("fyEnd").value = c.fyEnd || "";
+  $("defaultSeries").value = c.defaultSeries || "A";
+  $("nextVoucher").value = c.nextVoucher || 1;
+  $("lockUntil").value = c.lockUntil || "";
+  $("lockInfo").textContent = c.lockUntil ? `Låst t.o.m. ${c.lockUntil}` : "Ingen låsning";
+  $("companyMsg").textContent = "";
+}
+$("btnSaveCompany").addEventListener("click", ()=>{
+  db.company.name = $("cName").value.trim();
+  db.company.org = $("cOrg").value.trim();
+  db.company.fyStart = $("fyStart").value;
+  db.company.fyEnd = $("fyEnd").value;
+  db.company.defaultSeries = ($("defaultSeries").value.trim() || "A").toUpperCase();
+  db.company.nextVoucher = Math.max(1, parseInt($("nextVoucher").value || "1", 10));
+  db.company.lockUntil = $("lockUntil").value || "";
+  $("lockInfo").textContent = db.company.lockUntil ? `Låst t.o.m. ${db.company.lockUntil}` : "Ingen låsning";
+  logEvent("company.update", "Uppdaterade företagsinställningar.");
+  scheduleSave();
+  $("companyMsg").textContent = "Sparat.";
+  setStatus("Företag sparat.","ok");
+  renderStart();
+});
+$("btnUnlock").addEventListener("click", ()=>{
+  db.company.lockUntil = "";
+  $("lockUntil").value = "";
+  $("lockInfo").textContent = "Ingen låsning";
+  logEvent("company.unlock", "Tog bort periodlås.");
+  scheduleSave();
+  setStatus("Upplåst.","ok");
+});
+
+let selectedAccountNo = null;
+function renderAccounts(){
+  const q = ($("accSearch").value||"").trim().toLowerCase();
+  const rows = [...db.accounts].filter(a=>{
+    if(!q) return true;
+    return String(a.no).includes(q) || (a.name||"").toLowerCase().includes(q);
+  }).sort((a,b)=>String(a.no).localeCompare(String(b.no), "sv"));
+  $("accTable").innerHTML = rows.map(a=>`
+    <tr data-no="${escapeAttr(a.no)}" style="cursor:pointer">
+      <td class="mono">${escapeHtml(a.no)}</td>
+      <td>${escapeHtml(a.name||"")}</td>
+      <td>${typeLabel(a.type)}</td>
+      <td class="mono">${escapeHtml(a.vat||"NONE")}</td>
+    </tr>
+  `).join("") || `<tr><td colspan="4" class="muted">Inga konton.</td></tr>`;
+  $("accMsg").textContent = selectedAccountNo ? `Valt konto: ${selectedAccountNo}` : "";
+}
+$("accSearch").addEventListener("input", renderAccounts);
+$("btnAccSort").addEventListener("click", renderAccounts);
+$("accTable").addEventListener("click",(e)=>{
+  const tr = e.target.closest("tr[data-no]");
+  if(!tr) return;
+  const no = tr.dataset.no;
+  const a = db.accounts.find(x=>String(x.no)===String(no));
+  if(!a) return;
+  selectedAccountNo = String(a.no);
+  $("accNo").value = a.no;
+  $("accName").value = a.name || "";
+  $("accType").value = a.type || "asset";
+  $("accVAT").value = a.vat || "NONE";
+  $("accMsg").textContent = `Laddat konto ${a.no}.`;
+});
+$("btnAccClear").addEventListener("click", ()=>{
+  selectedAccountNo = null;
+  $("accNo").value = "";
+  $("accName").value = "";
+  $("accType").value = "asset";
+  $("accVAT").value = "NONE";
+  $("accMsg").textContent = "";
+});
+$("btnAccSave").addEventListener("click", ()=>{
+  const no = $("accNo").value.trim();
+  const name = $("accName").value.trim();
+  const type = $("accType").value;
+  const vat = $("accVAT").value;
+  if(!/^\d{3,4}$/.test(no)){ $("accMsg").innerHTML = `<span class="err">Konto måste vara 3–4 siffror.</span>`; setStatus("Fel i konto.","err"); return; }
+  if(!name){ $("accMsg").innerHTML = `<span class="err">Namn krävs.</span>`; setStatus("Fel i konto.","err"); return; }
+  const existing = db.accounts.find(a=>String(a.no)===String(no));
+  if(existing){
+    existing.name = name; existing.type = type; existing.vat = vat;
+    selectedAccountNo = String(no);
+    $("accMsg").textContent = `Uppdaterat konto ${no}.`;
+    logEvent("account.update", `Uppdaterade konto ${no}.`);
+  }else{
+    db.accounts.push({no, name, type, vat});
+    selectedAccountNo = String(no);
+    $("accMsg").textContent = `Skapat konto ${no}.`;
+    logEvent("account.create", `Skapade konto ${no}.`);
+  }
+  scheduleSave();
+  setStatus("Konto sparat.","ok");
+  renderAccounts();
+});
+$("btnAccDelete").addEventListener("click", ()=>{
+  const no = ($("accNo").value||"").trim();
+  if(!no) return;
+  const used = db.vouchers.some(v=>v.lines.some(l=>String(l.account)===String(no)));
+  if(used && !confirm("Kontot används i verifikat. Ta bort ändå?")) return;
+  db.accounts = db.accounts.filter(a=>String(a.no)!==String(no));
+  if(selectedAccountNo===String(no)) selectedAccountNo=null;
+  logEvent("account.delete", `Tog bort konto ${no}.`);
+  scheduleSave();
+  setStatus("Konto borttaget.","ok");
+  renderAccounts();
+});
+
+let loadedVoucherId = null;
+function newLineRow(line = {account:"",debit:0,credit:0}){
+  const div = document.createElement("div");
+  div.className = "row";
+  div.style.marginTop = "10px";
+  div.innerHTML = `
+    <div style="flex:1;min-width:160px">
+      <label>Konto</label>
+      <input class="lineAccount" placeholder="1930" value="${escapeAttr(line.account||"")}" />
+    </div>
+    <div style="flex:1;min-width:160px">
+      <label>Debet</label>
+      <input class="lineDebit" placeholder="0.00" value="${escapeAttr(line.debit? money(line.debit): "")}" />
+    </div>
+    <div style="flex:1;min-width:160px">
+      <label>Kredit</label>
+      <input class="lineCredit" placeholder="0.00" value="${escapeAttr(line.credit? money(line.credit): "")}" />
+    </div>
+    <div style="flex:0;min-width:90px;display:flex;align-items:flex-end">
+      <button class="btn danger btnRemoveLine" title="Ta bort rad">Ta bort</button>
+    </div>
+  `;
+  div.querySelectorAll("input").forEach(inp=>inp.addEventListener("input", updateVoucherSums));
+  div.querySelector(".btnRemoveLine").addEventListener("click", ()=>{ div.remove(); updateVoucherSums(); });
+  return div;
+}
+function readLinesFromUI(){
+  const lines = [];
+  document.querySelectorAll("#lines .row").forEach(r=>{
+    const account = r.querySelector(".lineAccount").value.trim();
+    const debit = toNumber(r.querySelector(".lineDebit").value.trim());
+    const credit = toNumber(r.querySelector(".lineCredit").value.trim());
+    if(!account && debit===0 && credit===0) return;
+    lines.push({account, debit, credit});
+  });
+  return lines;
+}
+function updateVoucherSums(){
+  const lines = readLinesFromUI();
+  const sumD = lines.reduce((s,l)=>s+toNumber(l.debit),0);
+  const sumC = lines.reduce((s,l)=>s+toNumber(l.credit),0);
+  const diff = sumD - sumC;
+  $("sumDebit").textContent = money(sumD);
+  $("sumCredit").textContent = money(sumC);
+  $("sumDiff").textContent = money(diff);
+  $("sumDiff").style.color = Math.abs(diff) < 0.00001 ? "var(--ok)" : "var(--danger)";
+}
+function refreshVoucherList(){
+  const from = $("listFrom").value || "0000-01-01";
+  const to = $("listTo").value || "9999-12-31";
+  const q = ($("voucherSearch").value||"").trim().toLowerCase();
+  const rows = [...db.vouchers].filter(v=>v.date>=from && v.date<=to).filter(v=>{
+    if(!q) return true;
+    const key = `${v.series}${v.no}`.toLowerCase();
+    return key.includes(q) || (v.text||"").toLowerCase().includes(q);
+  }).sort((a,b)=>{
+    if(a.date!==b.date) return a.date.localeCompare(b.date);
+    const as = String(a.series).localeCompare(String(b.series), "sv");
+    if(as!==0) return as;
+    return Number(a.no)-Number(b.no);
+  });
+  $("voucherTable").innerHTML = rows.map(v=>`
+    <tr data-id="${escapeAttr(v.id)}" style="cursor:pointer">
+      <td class="mono">${escapeHtml(v.date)}</td>
+      <td class="mono">${escapeHtml(v.series)}</td>
+      <td class="mono">${escapeHtml(String(v.no))}</td>
+      <td>${escapeHtml(v.text||"")}</td>
+      <td class="num">${v.lines.length}</td>
+    </tr>
+  `).join("") || `<tr><td colspan="5" class="muted">Inga verifikat i perioden.</td></tr>`;
+}
+function renderVouchers(){
+  if(!$("vDate").value) $("vDate").value = nowISODate();
+  if(!$("vSeries").value) $("vSeries").value = (db.company.defaultSeries||"A");
+  if(!$("vNo").value) $("vNo").value = suggestNextNo($("vSeries").value);
+  if($("lines").children.length===0){
+    $("lines").appendChild(newLineRow());
+    $("lines").appendChild(newLineRow());
+  }
+  updateVoucherSums();
+  const c = db.company;
+  $("listFrom").value = $("listFrom").value || c.fyStart || "";
+  $("listTo").value = $("listTo").value || c.fyEnd || "";
+  refreshVoucherList();
+}
+$("btnAddLine").addEventListener("click", ()=>{ $("lines").appendChild(newLineRow()); updateVoucherSums(); });
+$("vSeries").addEventListener("input", ()=>{ const s = ($("vSeries").value||"A").toUpperCase(); $("vSeries").value=s; $("vNo").value=suggestNextNo(s); });
+$("btnClearVoucher").addEventListener("click", ()=>{
+  loadedVoucherId = null;
+  $("vDate").value = nowISODate();
+  $("vSeries").value = (db.company.defaultSeries||"A");
+  $("vNo").value = suggestNextNo($("vSeries").value);
+  $("vText").value = "";
+  $("lines").innerHTML = "";
+  $("lines").appendChild(newLineRow());
+  $("lines").appendChild(newLineRow());
+  $("voucherMsg").textContent = "";
+  updateVoucherSums();
+  setStatus("Formulär rensat.","ok");
+});
+$("btnSaveVoucher").addEventListener("click", ()=>{
+  const date = $("vDate").value;
+  const series = ($("vSeries").value||"A").trim().toUpperCase();
+  const no = parseInt($("vNo").value || "0", 10);
+  const text = ($("vText").value||"").trim();
+  const lines = readLinesFromUI();
+  try{
+    if(!date) throw new Error("Datum krävs.");
+    assertNotLocked(date);
+    if(!series) throw new Error("Serie krävs.");
+    if(!no || no<1) throw new Error("Ver.nr måste vara >= 1.");
+    if(lines.length<2) throw new Error("Minst 2 rader krävs.");
+    const missing = lines.map(l=>l.account).filter(a=>a && !db.accounts.some(x=>String(x.no)===String(a)));
+    if(missing.length) throw new Error("Okända konton: " + missing.join(", "));
+    const sums = sumVoucher({lines});
+    if(Math.abs(sums.diff) > 0.00001) throw new Error(`Verifikatet balanserar inte (diff ${money(sums.diff)}).`);
+    const dup = db.vouchers.find(v=>v.id!==loadedVoucherId && String(v.series).toUpperCase()===series && Number(v.no)===no);
+    if(dup) throw new Error(`Ver.nr ${series}${no} finns redan.`);
+    if(loadedVoucherId){
+      const v = db.vouchers.find(x=>x.id===loadedVoucherId);
+      if(!v) throw new Error("Kunde inte hitta laddat verifikat.");
+      v.date=date; v.series=series; v.no=no; v.text=text; v.lines=lines;
+      $("voucherMsg").textContent = `Uppdaterat ${series}${no}.`;
+      logEvent("voucher.update", `Uppdaterade ${series}${no} (${date}).`);
+    }else{
+      db.vouchers.push({id: crypto.randomUUID(), date, series, no, text, lines});
+      $("voucherMsg").textContent = `Sparat ${series}${no}.`;
+      logEvent("voucher.create", `Skapade ${series}${no} (${date}).`);
+    }
+    db.seriesNext = db.seriesNext || {};
+    db.seriesNext[series] = Math.max(no+1, db.seriesNext[series]||1);
+    scheduleSave();
+    setStatus("Verifikat sparat.","ok");
+    refreshVoucherList();
+    renderStart();
+  }catch(e){
+    $("voucherMsg").innerHTML = `<span class="err">${escapeHtml(e.message || String(e))}</span>`;
+    setStatus("Fel i verifikat.","err");
+  }
+});
+$("btnDeleteVoucher").addEventListener("click", ()=>{
+  if(!loadedVoucherId) return;
+  const v = db.vouchers.find(x=>x.id===loadedVoucherId);
+  if(!v) return;
+  try{ assertNotLocked(v.date); }catch(e){ $("voucherMsg").innerHTML = `<span class="err">${escapeHtml(e.message)}</span>`; setStatus("Låst period.","err"); return; }
+  if(!confirm("Ta bort detta verifikat?")) return;
+  db.vouchers = db.vouchers.filter(x=>x.id!==loadedVoucherId);
+  logEvent("voucher.delete", `Tog bort ${v.series}${v.no} (${v.date}).`);
+  loadedVoucherId = null;
+  scheduleSave();
+  setStatus("Verifikat borttaget.","ok");
+  $("btnClearVoucher").click();
+  refreshVoucherList();
+  renderStart();
+});
+$("btnRefreshList").addEventListener("click", refreshVoucherList);
+$("voucherSearch").addEventListener("input", refreshVoucherList);
+$("voucherTable").addEventListener("click",(e)=>{
+  const tr = e.target.closest("tr[data-id]");
+  if(!tr) return;
+  const id = tr.dataset.id;
+  const v = db.vouchers.find(x=>x.id===id);
+  if(!v) return;
+  loadedVoucherId = v.id;
+  $("vDate").value = v.date;
+  $("vSeries").value = String(v.series).toUpperCase();
+  $("vNo").value = v.no;
+  $("vText").value = v.text || "";
+  $("lines").innerHTML = "";
+  v.lines.forEach(l=>$("lines").appendChild(newLineRow(l)));
+  updateVoucherSums();
+  $("voucherMsg").textContent = `Laddat ${v.series}${v.no}.`;
+  setStatus(withinLock(v.date) ? `Laddat (låst t.o.m. ${db.company.lockUntil})` : "Verifikat laddat.", withinLock(v.date) ? "err" : "ok");
+});
+
+function renderReports(){
+  const c = db.company;
+  $("rFrom").value = $("rFrom").value || c.fyStart || "";
+  $("rTo").value = $("rTo").value || c.fyEnd || "";
+  $("reportOut").innerHTML = "—";
+  $("reportText").classList.add("hidden");
+  $("reportMsg").textContent = "";
+}
+$("rType").addEventListener("change", ()=>{
+  $("ledgerAccountWrap").classList.toggle("hidden", $("rType").value!=="ledger");
+});
+$("btnPrintReport").addEventListener("click", ()=>window.print());
+function postedLines(from,to){
+  const res = [];
+  for(const v of db.vouchers){
+    if(v.date < from || v.date > to) continue;
+    for(const l of v.lines){
+      res.push({ date:v.date, series:v.series, no:v.no, text:v.text||"", account:l.account, debit:toNumber(l.debit), credit:toNumber(l.credit) });
+    }
+  }
+  return res;
+}
+function accountMap(){ const m=new Map(); for(const a of db.accounts) m.set(String(a.no), a); return m; }
+function reportTrial(from,to){
+  const lines = postedLines(from,to);
+  const amap = accountMap();
+  const sums = new Map();
+  for(const l of lines){
+    if(!sums.has(l.account)) sums.set(l.account, {debit:0,credit:0});
+    const s = sums.get(l.account);
+    s.debit += l.debit; s.credit += l.credit;
+  }
+  const rows = [...sums.entries()].map(([acc,s])=>{
+    const a = amap.get(String(acc)) || {name:"(saknas)", type:"", vat:""};
+    const balance = s.debit - s.credit;
+    return {acc, name:a.name, type:a.type, debit:s.debit, credit:s.credit, balance};
+  }).sort((x,y)=>String(x.acc).localeCompare(String(y.acc), "sv"));
+  const totalD = rows.reduce((p,r)=>p+r.debit,0);
+  const totalC = rows.reduce((p,r)=>p+r.credit,0);
+  const html = `
+    <div class="muted small">Saldolista ${escapeHtml(from)} → ${escapeHtml(to)}</div>
+    <div class="sep"></div>
+    <table>
+      <thead><tr><th>Konto</th><th>Namn</th><th class="num">Debet</th><th class="num">Kredit</th><th class="num">Saldo</th></tr></thead>
+      <tbody>
+        ${rows.map(r=>`
+          <tr>
+            <td class="mono">${escapeHtml(r.acc)}</td>
+            <td>${escapeHtml(r.name||"")}</td>
+            <td class="num mono">${money(r.debit)}</td>
+            <td class="num mono">${money(r.credit)}</td>
+            <td class="num mono">${money(r.balance)}</td>
+          </tr>
+        `).join("")}
+        <tr>
+          <td colspan="2" class="muted">Summa</td>
+          <td class="num mono">${money(totalD)}</td>
+          <td class="num mono">${money(totalC)}</td>
+          <td class="num mono">${money(totalD-totalC)}</td>
+        </tr>
+      </tbody>
+    </table>
+  `;
+  const text = [
+    `SALDOLISTA ${from} - ${to}`,
+    `Konto\tNamn\tDebet\tKredit\tSaldo`,
+    ...rows.map(r=>`${r.acc}\t${r.name}\t${money(r.debit)}\t${money(r.credit)}\t${money(r.balance)}`),
+    `SUMMA\t\t${money(totalD)}\t${money(totalC)}\t${money(totalD-totalC)}`
+  ].join("\n");
+  return {html, text};
+}
+function reportLedger(acc, from,to){
+  if(!acc) throw new Error("Ange konto för huvudbok.");
+  const amap = accountMap();
+  const a = amap.get(String(acc));
+  if(!a) throw new Error("Okänt konto.");
+  const lines = postedLines(from,to).filter(l=>String(l.account)===String(acc))
+    .sort((x,y)=>{
+      if(x.date!==y.date) return x.date.localeCompare(y.date);
+      if(x.series!==y.series) return String(x.series).localeCompare(String(y.series),"sv");
+      return Number(x.no)-Number(y.no);
+    });
+  let run = 0;
+  const rows = lines.map(l=>{ const delta = l.debit - l.credit; run += delta; return {...l, saldo:run}; });
+  const html = `
+    <div class="muted small">Huvudbok konto <span class="mono">${escapeHtml(acc)}</span> – ${escapeHtml(a.name||"")}, ${escapeHtml(from)} → ${escapeHtml(to)}</div>
+    <div class="sep"></div>
+    <table>
+      <thead><tr><th>Datum</th><th>Ver</th><th>Text</th><th class="num">Debet</th><th class="num">Kredit</th><th class="num">Saldo</th></tr></thead>
+      <tbody>
+        ${rows.map(r=>`
+          <tr>
+            <td class="mono">${escapeHtml(r.date)}</td>
+            <td class="mono">${escapeHtml(r.series)}${escapeHtml(String(r.no))}</td>
+            <td>${escapeHtml(r.text||"")}</td>
+            <td class="num mono">${money(r.debit)}</td>
+            <td class="num mono">${money(r.credit)}</td>
+            <td class="num mono">${money(r.saldo)}</td>
+          </tr>
+        `).join("") || `<tr><td colspan="6" class="muted">Inga transaktioner.</td></tr>`}
+      </tbody>
+    </table>
+  `;
+  const text = [
+    `HUVUDBOK ${acc} ${a.name} ${from}-${to}`,
+    `Datum\tVer\tText\tDebet\tKredit\tSaldo`,
+    ...rows.map(r=>`${r.date}\t${r.series}${r.no}\t${r.text}\t${money(r.debit)}\t${money(r.credit)}\t${money(r.saldo)}`)
+  ].join("\n");
+  return {html, text};
+}
+function reportPL(from,to){
+  const lines = postedLines(from,to);
+  const amap = accountMap();
+  const sums = new Map();
+  for(const l of lines){
+    const a = amap.get(String(l.account));
+    if(!a) continue;
+    if(a.type!=="revenue" && a.type!=="expense") continue;
+    if(!sums.has(l.account)) sums.set(l.account, 0);
+    sums.set(l.account, sums.get(l.account) + (l.debit - l.credit));
+  }
+  const rows = [...sums.entries()].map(([acc,balance])=>{
+    const a = amap.get(String(acc));
+    let amount = balance;
+    if(a.type==="revenue") amount = -balance;
+    return {acc, name:a.name, type:a.type, amount};
+  }).sort((x,y)=>String(x.acc).localeCompare(String(y.acc),"sv"));
+  const rev = rows.filter(r=>r.type==="revenue").reduce((s,r)=>s+r.amount,0);
+  const exp = rows.filter(r=>r.type==="expense").reduce((s,r)=>s+r.amount,0);
+  const result = rev - exp;
+  const html = `
+    <div class="muted small">Resultaträkning ${escapeHtml(from)} → ${escapeHtml(to)}</div>
+    <div class="sep"></div>
+    <table>
+      <thead><tr><th>Konto</th><th>Namn</th><th>Typ</th><th class="num">Belopp</th></tr></thead>
+      <tbody>
+        ${rows.map(r=>`
+          <tr>
+            <td class="mono">${escapeHtml(r.acc)}</td>
+            <td>${escapeHtml(r.name||"")}</td>
+            <td>${r.type==="revenue"?"Intäkt":"Kostnad"}</td>
+            <td class="num mono">${money(r.amount)}</td>
+          </tr>
+        `).join("") || `<tr><td colspan="4" class="muted">Inga resultatkonton i perioden.</td></tr>`}
+        <tr><td colspan="3" class="muted">Summa intäkter</td><td class="num mono">${money(rev)}</td></tr>
+        <tr><td colspan="3" class="muted">Summa kostnader</td><td class="num mono">${money(exp)}</td></tr>
+        <tr><td colspan="3" class="muted">Periodens resultat</td><td class="num mono">${money(result)}</td></tr>
+      </tbody>
+    </table>
+  `;
+  const text = [
+    `RESULTATRÄKNING ${from}-${to}`,
+    `Konto\tNamn\tTyp\tBelopp`,
+    ...rows.map(r=>`${r.acc}\t${r.name}\t${r.type}\t${money(r.amount)}`),
+    `SUM INTÄKTER\t\t\t${money(rev)}`,
+    `SUM KOSTNADER\t\t\t${money(exp)}`,
+    `RESULTAT\t\t\t${money(result)}`
+  ].join("\n");
+  return {html, text};
+}
+function reportBS(from,to){
+  const lines = postedLines(from,to);
+  const amap = accountMap();
+  const sums = new Map();
+  for(const l of lines){
+    const a = amap.get(String(l.account));
+    if(!a) continue;
+    if(!["asset","liability","equity"].includes(a.type)) continue;
+    if(!sums.has(l.account)) sums.set(l.account, 0);
+    sums.set(l.account, sums.get(l.account) + (l.debit - l.credit));
+  }
+  const rows = [...sums.entries()].map(([acc,balance])=>{
+    const a = amap.get(String(acc));
+    let amount = balance;
+    if(a.type==="liability" || a.type==="equity") amount = -balance;
+    return {acc, name:a.name, type:a.type, amount};
+  }).sort((x,y)=>String(x.acc).localeCompare(String(y.acc),"sv"));
+  const assets = rows.filter(r=>r.type==="asset").reduce((s,r)=>s+r.amount,0);
+  const liab = rows.filter(r=>r.type==="liability").reduce((s,r)=>s+r.amount,0);
+  const eq = rows.filter(r=>r.type==="equity").reduce((s,r)=>s+r.amount,0);
+  const rhs = liab + eq;
+  const diff = assets - rhs;
+  const html = `
+    <div class="muted small">Balansräkning ${escapeHtml(from)} → ${escapeHtml(to)}</div>
+    <div class="sep"></div>
+    <table>
+      <thead><tr><th>Konto</th><th>Namn</th><th>Typ</th><th class="num">Belopp</th></tr></thead>
+      <tbody>
+        ${rows.map(r=>`
+          <tr>
+            <td class="mono">${escapeHtml(r.acc)}</td>
+            <td>${escapeHtml(r.name||"")}</td>
+            <td>${typeLabel(r.type)}</td>
+            <td class="num mono">${money(r.amount)}</td>
+          </tr>
+        `).join("") || `<tr><td colspan="4" class="muted">Inga balanskonton i perioden.</td></tr>`}
+        <tr><td colspan="3" class="muted">Summa tillgångar</td><td class="num mono">${money(assets)}</td></tr>
+        <tr><td colspan="3" class="muted">Summa skulder</td><td class="num mono">${money(liab)}</td></tr>
+        <tr><td colspan="3" class="muted">Summa eget kapital</td><td class="num mono">${money(eq)}</td></tr>
+        <tr><td colspan="3" class="muted">Diff (ska vara 0)</td><td class="num mono">${money(diff)}</td></tr>
+      </tbody>
+    </table>
+  `;
+  const text = [
+    `BALANSRÄKNING ${from}-${to}`,
+    `Konto\tNamn\tTyp\tBelopp`,
+    ...rows.map(r=>`${r.acc}\t${r.name}\t${r.type}\t${money(r.amount)}`),
+    `SUM TILLGÅNGAR\t\t\t${money(assets)}`,
+    `SUM SKULDER\t\t\t${money(liab)}`,
+    `SUM EGET KAPITAL\t\t\t${money(eq)}`,
+    `DIFF\t\t\t${money(diff)}`
+  ].join("\n");
+  return {html, text};
+}
+function reportVAT2(from,to){
+  const lines = postedLines(from,to);
+  const amap = accountMap();
+  const vatCodes = ["OUT25","OUT12","OUT6","IN25","IN12","IN6"];
+  const perCode = Object.fromEntries(vatCodes.map(c=>[c,0]));
+  const accAgg = new Map();
+  for(const l of lines){
+    const a = amap.get(String(l.account));
+    if(!a) continue;
+    if(!vatCodes.includes(a.vat)) continue;
+    if(!accAgg.has(l.account)) accAgg.set(l.account, {debit:0,credit:0,vat:a.vat,name:a.name});
+    const s = accAgg.get(l.account);
+    s.debit += l.debit; s.credit += l.credit;
+  }
+  const perAcc = [];
+  for(const [acc,s] of accAgg.entries()){
+    let amount = 0;
+    if(String(s.vat).startsWith("OUT")) amount = (s.credit - s.debit);
+    else amount = (s.debit - s.credit);
+    perCode[s.vat] += amount;
+    perAcc.push({acc, name:s.name, vat:s.vat, amount});
+  }
+  perAcc.sort((a,b)=>String(a.acc).localeCompare(String(b.acc),"sv"));
+  const out = perCode.OUT25 + perCode.OUT12 + perCode.OUT6;
+  const inn = perCode.IN25 + perCode.IN12 + perCode.IN6;
+  const payable = out - inn;
+  const html = `
+    <div class="muted small">Momsrapport (v2) ${escapeHtml(from)} → ${escapeHtml(to)}</div>
+    <div class="sep"></div>
+    <div class="row">
+      <div class="pill">Utgående 25%: <span class="mono">${money(perCode.OUT25)}</span></div>
+      <div class="pill">Utgående 12%: <span class="mono">${money(perCode.OUT12)}</span></div>
+      <div class="pill">Utgående 6%: <span class="mono">${money(perCode.OUT6)}</span></div>
+    </div>
+    <div class="row" style="margin-top:8px">
+      <div class="pill">Ingående 25%: <span class="mono">${money(perCode.IN25)}</span></div>
+      <div class="pill">Ingående 12%: <span class="mono">${money(perCode.IN12)}</span></div>
+      <div class="pill">Ingående 6%: <span class="mono">${money(perCode.IN6)}</span></div>
+    </div>
+    <div class="sep"></div>
+    <table>
+      <thead><tr><th>Konto</th><th>Namn</th><th>Moms</th><th class="num">Belopp</th></tr></thead>
+      <tbody>
+        ${perAcc.map(r=>`
+          <tr>
+            <td class="mono">${escapeHtml(r.acc)}</td>
+            <td>${escapeHtml(r.name||"")}</td>
+            <td class="mono">${escapeHtml(r.vat)}</td>
+            <td class="num mono">${money(r.amount)}</td>
+          </tr>
+        `).join("") || `<tr><td colspan="4" class="muted">Inga momskonton i perioden.</td></tr>`}
+        <tr><td colspan="3" class="muted">Summa utgående</td><td class="num mono">${money(out)}</td></tr>
+        <tr><td colspan="3" class="muted">Summa ingående</td><td class="num mono">${money(inn)}</td></tr>
+        <tr><td colspan="3" class="muted">Moms att betala (+) / få tillbaka (-)</td><td class="num mono">${money(payable)}</td></tr>
+      </tbody>
+    </table>
+  `;
+  const text = [
+    `MOMSRAPPORT (V2) ${from}-${to}`,
+    `OUT25\t${money(perCode.OUT25)}`,
+    `OUT12\t${money(perCode.OUT12)}`,
+    `OUT6\t${money(perCode.OUT6)}`,
+    `IN25\t${money(perCode.IN25)}`,
+    `IN12\t${money(perCode.IN12)}`,
+    `IN6\t${money(perCode.IN6)}`,
+    `SUM OUT\t${money(out)}`,
+    `SUM IN\t${money(inn)}`,
+    `ATT BETALA(+)/FÅ(-)\t${money(payable)}`,
+    ``,
+    `DETALJER`,
+    `Konto\tNamn\tKod\tBelopp`,
+    ...perAcc.map(r=>`${r.acc}\t${r.name}\t${r.vat}\t${money(r.amount)}`)
+  ].join("\n");
+  return {html, text};
+}
+$("btnRunReport").addEventListener("click", ()=>{
+  const from = $("rFrom").value || "0000-01-01";
+  const to = $("rTo").value || "9999-12-31";
+  const t = $("rType").value;
+  let out="", text="";
+  try{
+    if(t==="trial") ({html:out, text} = reportTrial(from,to));
+    else if(t==="ledger") ({html:out, text} = reportLedger(($("ledgerAccount").value||"").trim(), from,to));
+    else if(t==="pl") ({html:out, text} = reportPL(from,to));
+    else if(t==="bs") ({html:out, text} = reportBS(from,to));
+    else if(t==="vat") ({html:out, text} = reportVAT2(from,to));
+    $("reportOut").innerHTML = out;
+    $("reportText").value = text;
+    $("reportText").classList.remove("hidden");
+    $("reportMsg").textContent = "Klar.";
+    setStatus("Rapport klar.","ok");
+  }catch(e){
+    $("reportMsg").innerHTML = `<span class="err">${escapeHtml(String(e.message||e))}</span>`;
+    setStatus("Rapportfel.","err");
+  }
+});
+$("btnCopyReport").addEventListener("click", async ()=>{
+  const t = $("reportText").value || "";
+  if(!t) return;
+  await navigator.clipboard.writeText(t);
+  setStatus("Rapport kopierad.","ok");
+});
+
+function renderImportExport(){
+  $("jsonOut").value = JSON.stringify(db, null, 2);
+  $("sieOut").value = generateSIE(db);
+  $("importMsg").textContent = "";
+}
+$("btnExportJSONFile").addEventListener("click", ()=>{
+  downloadText("bokforing-backup.json", JSON.stringify(db,null,2), "application/json;charset=utf-8");
+  logEvent("export.json", "Exporterade JSON-backup (fil).");
+  scheduleSave();
+});
+$("btnExportJSONCopy").addEventListener("click", async ()=>{
+  await navigator.clipboard.writeText(JSON.stringify(db,null,2));
+  setStatus("JSON kopierad.","ok");
+});
+$("btnImportJSON").addEventListener("click", ()=>{
+  try{
+    const obj = JSON.parse($("jsonIn").value);
+    if(!obj || typeof obj!=="object") throw new Error("Ogiltig JSON.");
+    if(!obj.company || !Array.isArray(obj.accounts) || !Array.isArray(obj.vouchers)) throw new Error("Saknar obligatoriska fält.");
+    db = obj; if(!db.audit) db.audit = [];
+    logEvent("import.json", "Importerade JSON (text).");
+    scheduleSave();
+    $("importMsg").textContent = "Import klar.";
+    setStatus("Import klar.","ok");
+    showTab("start");
+  }catch(e){
+    $("importMsg").innerHTML = `<span class="err">${escapeHtml(String(e.message||e))}</span>`;
+    setStatus("Importfel.","err");
+  }
+});
+$("btnImportJSONFile").addEventListener("click", async ()=>{
+  const f = $("jsonFile").files && $("jsonFile").files[0];
+  if(!f) return;
+  try{
+    const obj = JSON.parse(await f.text());
+    if(!obj || typeof obj!=="object") throw new Error("Ogiltig JSON.");
+    if(!obj.company || !Array.isArray(obj.accounts) || !Array.isArray(obj.vouchers)) throw new Error("Saknar obligatoriska fält.");
+    db = obj; if(!db.audit) db.audit = [];
+    logEvent("import.json", `Importerade JSON-fil: ${f.name}`);
+    scheduleSave();
+    $("importMsg").textContent = "Import klar.";
+    setStatus("Import klar.","ok");
+    showTab("start");
+  }catch(e){
+    $("importMsg").innerHTML = `<span class="err">${escapeHtml(String(e.message||e))}</span>`;
+    setStatus("Importfel.","err");
+  }
+});
+$("btnExportSIEFile").addEventListener("click", ()=>{
+  downloadText("bokforing.sie", generateSIE(db), "text/plain;charset=utf-8");
+  logEvent("export.sie", "Exporterade SIE (fil).");
+  scheduleSave();
+});
+$("btnCopySIE").addEventListener("click", async ()=>{
+  await navigator.clipboard.writeText(generateSIE(db));
+  setStatus("SIE kopierad.","ok");
+});
+
+function parseSieNumber(s){ return toNumber(String(s).replace(/\s/g,"")); }
+function unquote(s){ let t=String(s||""); if(t.startsWith('"')&&t.endsWith('"')) t=t.slice(1,-1); return t.replaceAll('\\"','"'); }
+function fromSieDate(yyyymmdd){ if(!yyyymmdd||!/^(\d{8})$/.test(yyyymmdd)) return ""; return `${yyyymmdd.slice(0,4)}-${yyyymmdd.slice(4,6)}-${yyyymmdd.slice(6,8)}`; }
+function parseSIE(text){
+  const lines = String(text||"").split(/\r?\n/).map(l=>l.trim()).filter(l=>l && !l.startsWith("{") && !l.startsWith("}"));
+  const accounts = [];
+  const vouchers = [];
+  let current = null;
+  for(const line of lines){
+    if(line.startsWith("#KONTO")){
+      const m = line.match(/^#KONTO\s+(\d+)\s+(".*")\s*$/);
+      if(m){
+        accounts.push({no:m[1], name:unquote(m[2]), type:guessTypeFromBAS(m[1]), vat:guessVatFromBAS(m[1])});
+      }
+      continue;
+    }
+    if(line.startsWith("#VER")){
+      const m = line.match(/^#VER\s+"([^"]+)"\s+(\d+)\s+(\d{8})\s+(".*")\s*$/);
+      if(m){
+        if(current) vouchers.push(finalizeImportedVoucher(current));
+        current = { series:m[1], no:Number(m[2]), date:fromSieDate(m[3]), text:unquote(m[4]), lines:[] };
+      }
+      continue;
+    }
+    if(line.startsWith("#TRANS")){
+      const m = line.match(/^#TRANS\s+(\d+)\s+\{[^}]*\}\s+([-0-9.,]+)\s+(\d{8})\s+(".*")\s*$/);
+      if(m && current){
+        const account = m[1];
+        const amount = parseSieNumber(m[2]);
+        const debit = amount >= 0 ? amount : 0;
+        const credit = amount < 0 ? Math.abs(amount) : 0;
+        current.lines.push({account, debit, credit});
+      }
+      continue;
+    }
+  }
+  if(current) vouchers.push(finalizeImportedVoucher(current));
+  return {accounts, vouchers};
+}
+function finalizeImportedVoucher(v){
+  const agg = new Map();
+  for(const l of v.lines){
+    const key = String(l.account);
+    if(!agg.has(key)) agg.set(key, {account:key, debit:0, credit:0});
+    const a = agg.get(key);
+    a.debit += toNumber(l.debit);
+    a.credit += toNumber(l.credit);
+  }
+  const lines = [...agg.values()].filter(x=>Math.abs(x.debit)+Math.abs(x.credit) > 0.00001);
+  return { id: crypto.randomUUID(), date: v.date || nowISODate(), series:String(v.series||"A").toUpperCase(), no:Number(v.no||1), text:v.text||"", lines };
+}
+function importSIEText(text, dupeMode="skip"){
+  const parsed = parseSIE(text);
+  let addedAccounts = 0;
+  for(const a of parsed.accounts){
+    const ex = db.accounts.find(x=>String(x.no)===String(a.no));
+    if(!ex){ db.accounts.push(a); addedAccounts++; }
+    else if(!ex.name && a.name) ex.name = a.name;
+  }
+  let addedVouchers = 0, skippedVouchers = 0;
+  for(const v of parsed.vouchers){
+    const dup = db.vouchers.find(x=>String(x.series).toUpperCase()===String(v.series).toUpperCase() && Number(x.no)===Number(v.no));
+    if(dup){
+      if(dupeMode==="replace"){ dup.date=v.date; dup.text=v.text; dup.lines=v.lines; logEvent("sie.replace", `Ersatte ${v.series}${v.no} från SIE.`); }
+      else skippedVouchers++;
+      continue;
+    }
+    db.vouchers.push(v);
+    addedVouchers++;
+  }
+  db.seriesNext = db.seriesNext || {};
+  for(const v of db.vouchers){
+    const s = String(v.series||"A").toUpperCase();
+    db.seriesNext[s] = Math.max((db.seriesNext[s]||1), Number(v.no||0)+1);
+  }
+  logEvent("import.sie", `Importerade SIE: +${addedAccounts} konton, +${addedVouchers} verifikat, skippade ${skippedVouchers}, mode=${dupeMode}.`);
+  scheduleSave();
+  return {addedAccounts, addedVouchers, skippedVouchers};
+}
+$("btnImportSIE").addEventListener("click", ()=>{
+  try{
+    const mode = $("sieDupe").value;
+    const res = importSIEText($("sieIn").value, mode);
+    $("importMsg").textContent = `SIE-import klar. Konton: +${res.addedAccounts}, Verifikat: +${res.addedVouchers}, Skippade: ${res.skippedVouchers}`;
+    setStatus("SIE import klar.","ok");
+    showTab("start");
+  }catch(e){
+    $("importMsg").innerHTML = `<span class="err">${escapeHtml(e.message || String(e))}</span>`;
+    setStatus("SIE importfel.","err");
+  }
+});
+$("btnImportSIEFile").addEventListener("click", async ()=>{
+  const f = $("sieFile").files && $("sieFile").files[0];
+  if(!f) return;
+  try{
+    const mode = $("sieDupe").value;
+    const res = importSIEText(await f.text(), mode);
+    $("importMsg").textContent = `SIE-import klar (${f.name}). Konton: +${res.addedAccounts}, Verifikat: +${res.addedVouchers}, Skippade: ${res.skippedVouchers}`;
+    setStatus("SIE import klar.","ok");
+    showTab("start");
+  }catch(e){
+    $("importMsg").innerHTML = `<span class="err">${escapeHtml(e.message || String(e))}</span>`;
+    setStatus("SIE importfel.","err");
+  }
+});
+
+function sieDate(iso){ return iso ? iso.replaceAll("-", "") : ""; }
+function escapeSie(s){ return String(s).replaceAll('"','\\"'); }
+function generateSIE(db){
+  const c = db.company || {};
+  const fyStart = c.fyStart ? sieDate(c.fyStart) : "";
+  const fyEnd = c.fyEnd ? sieDate(c.fyEnd) : "";
+  const genDate = sieDate(nowISODate());
+  const prog = "SPCSBOK_HTML_V2";
+  let out = [];
+  out.push(`#FLAGGA 0`);
+  out.push(`#PROGRAM "${prog}" 2.0`);
+  out.push(`#FORMAT PC8`);
+  out.push(`#GEN ${genDate} "${escapeSie(c.name||"")}"`);
+  if(c.org) out.push(`#ORGNR ${escapeSie(c.org)}`);
+  if(fyStart && fyEnd) out.push(`#RAR 0 ${fyStart} ${fyEnd}`);
+  for(const a of (db.accounts||[]).slice().sort((x,y)=>String(x.no).localeCompare(String(y.no),"sv"))){
+    out.push(`#KONTO ${a.no} "${escapeSie(a.name||"")}"`);
+  }
+  const vs = (db.vouchers||[]).slice().sort((a,b)=>{
+    if(a.date!==b.date) return a.date.localeCompare(b.date);
+    const s = String(a.series).localeCompare(String(b.series),"sv");
+    if(s!==0) return s;
+    return Number(a.no)-Number(b.no);
+  });
+  for(const v of vs){
+    const vdate = sieDate(v.date);
+    const serie = escapeSie(String(v.series||"A").toUpperCase());
+    const nr = String(v.no||"");
+    const text = escapeSie(v.text||"");
+    out.push(`#VER "${serie}" ${nr} ${vdate} "${text}"`);
+    for(const l of (v.lines||[])){
+      const acc = String(l.account);
+      const amount = (toNumber(l.debit) - toNumber(l.credit));
+      out.push(`#TRANS ${acc} {} ${money(amount)} ${vdate} "${text}"`);
+    }
+    out.push(`{`); out.push(`}`);
+  }
+  out.push(`#SIETYPE 4`);
+  return out.join("\r\n");
+}
+
+function renderLog(){
+  $("diag").innerHTML = `
+    <div>Version</div><div>${escapeHtml(String(db.meta?.version ?? "—"))}</div>
+    <div>Skapad</div><div class="mono">${escapeHtml(String(db.meta?.createdAt ?? "—"))}</div>
+    <div>Lagring</div><div>${escapeHtml(storageMode)}</div>
+    <div>Konton</div><div>${db.accounts.length}</div>
+    <div>Verifikat</div><div>${db.vouchers.length}</div>
+    <div>Loggrader</div><div>${(db.audit||[]).length}</div>
+  `;
+  const rows = (db.audit||[]).slice(0, 500);
+  $("logTable").innerHTML = rows.map(e=>`
+    <tr>
+      <td class="mono">${escapeHtml(e.ts.replace("T"," ").replace("Z",""))}</td>
+      <td class="mono">${escapeHtml(e.action)}</td>
+      <td>${escapeHtml(e.detail||"")}</td>
+    </tr>
+  `).join("") || `<tr><td colspan="3" class="muted">Ingen logg ännu.</td></tr>`;
+}
+$("btnLogRefresh").addEventListener("click", renderLog);
+$("btnLogClear").addEventListener("click", ()=>{
+  if(!confirm("Töm loggen?")) return;
+  db.audit = [];
+  logEvent("audit.clear", "Tömde logg.");
+  scheduleSave();
+  renderLog();
+});
+
+(async function init(){
+  await storageInit();
+  await loadOrInitDB();
+  setStoragePill();
+  setStatus("Redo","ok");
+  showTab("start");
+})();
 </script>
 </body>
 </html>

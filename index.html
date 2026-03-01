@@ -22,6 +22,7 @@
   --wd-bg:#2a2040;--wd-border:#6644aa;
   --sw-acc:#55ffcc;--cd-acc:#ffcc55;--tz-acc:#ff88cc;
   --evt-modal-bg:#1e2540;
+  color-scheme: dark;
 }
 [data-theme="light"]{
   --bg:#f0f0f8;--bg2:#ffffff;--border:#ccccee;--border2:#ddddee;
@@ -36,8 +37,10 @@
   --wd-bg:#f0e8ff;--wd-border:#9966cc;
   --sw-acc:#008866;--cd-acc:#886600;--tz-acc:#aa2288;
   --evt-modal-bg:#f0f0ff;
+  color-scheme: light;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
+html{background:var(--bg);min-height:100%;}
 body{
   background:var(--bg);color:var(--text);font-family:'Courier New',monospace;
   min-height:100vh;display:flex;flex-direction:column;
@@ -367,7 +370,26 @@ h1{font-size:1rem;letter-spacing:.3em;color:var(--text-mid);text-transform:upper
 .rng-result-box{text-align:center;padding:8px 0 6px;}
 .rng-res-main{font-size:clamp(1.4rem,4.5vw,2.1rem);color:var(--accent);font-weight:bold;letter-spacing:.05em;}
 .rng-res-sub{font-size:.8rem;color:var(--text-mid);letter-spacing:.12em;margin-top:4px;}
-.rng-hint{text-align:center;font-size:.65rem;color:var(--conv-hint);letter-spacing:.12em;padding:8px 0;}
+.dc-row{display:flex;gap:8px;align-items:center;justify-content:center;margin-bottom:12px;}
+.dc-inp{
+  background:var(--inp-bg);border:1px solid var(--border);border-radius:4px;
+  color:var(--accent);font-family:'Courier New',monospace;font-size:.95rem;
+  padding:8px 12px;width:160px;text-align:center;outline:none;transition:border-color .2s;
+  letter-spacing:.05em;
+}
+.dc-inp-pt{color:var(--accent4);}
+.dc-inp:focus{border-color:var(--accent4);}
+.dc-today-btn{
+  padding:6px 12px;border:1px solid var(--border2);border-radius:4px;
+  background:transparent;color:var(--text-dim);font-family:'Courier New',monospace;
+  font-size:.6rem;letter-spacing:.12em;cursor:pointer;transition:all .2s;flex-shrink:0;
+}
+.dc-today-btn:hover{border-color:var(--accent);color:var(--accent);}
+.dc-res-main{font-size:clamp(1.3rem,4vw,1.9rem);color:var(--accent);font-weight:bold;letter-spacing:.06em;text-align:center;padding:8px 0 2px;}
+.dc-res-sub{font-size:.72rem;color:var(--text-mid);letter-spacing:.15em;text-align:center;margin-bottom:10px;}
+.dc-breakdown{display:grid;grid-template-columns:1fr 1fr;gap:6px;border-top:1px solid var(--border2);padding-top:10px;}
+.dc-hint{text-align:center;font-size:.65rem;color:var(--conv-hint);letter-spacing:.12em;padding:8px 0;}
+
 .tz-mode-btn{
   padding:3px 10px;border:1px solid var(--border);border-radius:4px;
   background:var(--bg);color:var(--text-dim);font-family:'Courier New',monospace;
@@ -390,14 +412,39 @@ h1{font-size:1rem;letter-spacing:.3em;color:var(--text-mid);text-transform:upper
 .rng-ep-real{color:var(--accent);font-size:.85rem;min-width:72px;}
 .rng-ep-arrow{color:var(--text-dim);font-size:.75rem;flex-shrink:0;}
 .rng-ep-pt{color:var(--accent4);font-size:.85rem;}
-background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:18px 22px;width:100%;text-align:center;}
+.cal-today-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:8px;
+  padding:16px 20px;width:100%;text-align:center;
+}
+.ct-toggle-row{display:flex;justify-content:center;margin-bottom:12px;}
+.ct-toggle-btn{
+  padding:3px 12px;border:1px solid var(--border);border-radius:4px;
+  background:transparent;color:var(--text-dim);font-family:'Courier New',monospace;
+  font-size:.58rem;letter-spacing:.15em;cursor:pointer;transition:all .2s;
+}
+.ct-toggle-btn:hover{border-color:var(--accent4);color:var(--accent4);}
+.ct-toggle-btn.period-mode{border-color:var(--accent4);color:var(--accent4);}
+.ct-toggle-btn.greg-mode{border-color:var(--accent3);color:var(--accent3);}
+
+/* Period date view */
+.ct-period-view{}
 .ct-month{font-size:.7rem;letter-spacing:.3em;color:var(--text-mid);margin-bottom:4px;}
 .ct-day{font-size:3.5rem;font-weight:bold;color:var(--accent);line-height:1;}
-.ct-year{font-size:1rem;color:var(--text-mid);margin-top:2px;}
-.ct-wd{font-size:.7rem;letter-spacing:.2em;color:var(--accent2);margin-top:6px;}
-.ct-greg{font-size:.7rem;color:var(--text-dim);margin-top:4px;}
-.cal-live{font-size:1.2rem;color:var(--accent4);margin-top:8px;letter-spacing:.1em;}
-.cal-live-ms{font-size:.8rem;opacity:.6;}
+.ct-wd{font-size:.7rem;letter-spacing:.2em;color:var(--accent2);margin-top:4px;}
+.ct-year{font-size:.85rem;color:var(--text-mid);margin-top:2px;}
+
+/* Live period clock */
+.cal-live{font-size:1.4rem;color:var(--accent4);margin-top:10px;letter-spacing:.1em;font-weight:bold;}
+.cal-live-ms{font-size:.9rem;opacity:.7;}
+
+/* Gregorian date view */
+.ct-greg-view{display:none;}
+.ct-greg-big{font-size:2.2rem;font-weight:bold;color:var(--accent3);line-height:1;}
+.ct-greg-month{font-size:.7rem;letter-spacing:.3em;color:var(--text-mid);margin-bottom:4px;}
+.ct-greg-year{font-size:.85rem;color:var(--text-mid);margin-top:4px;}
+.ct-greg-wd{font-size:.7rem;color:var(--text-dim);margin-top:2px;}
+.ct-local-time{font-size:1.2rem;color:var(--accent3);opacity:.8;margin-top:10px;letter-spacing:.1em;}
+
 .cal-nav{display:flex;align-items:center;justify-content:space-between;width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;}
 .cal-nav-btn{background:none;border:1px solid var(--border);border-radius:4px;color:var(--accent);font-family:'Courier New',monospace;font-size:.9rem;padding:4px 12px;cursor:pointer;transition:background .2s;}
 .cal-nav-btn:hover{background:var(--border);}
@@ -857,14 +904,35 @@ background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1
 <!-- ══ CALENDAR PANE ══ -->
 <div class="pane" id="pane-calendar">
   <div class="cal-today-card">
-    <div class="ct-month" id="ct-month">PRIMA</div>
-    <div class="ct-day"   id="ct-day">1</div>
-    <div class="ct-year"  id="ct-year">2026</div>
-    <div class="ct-wd"    id="ct-wd">D1</div>
-    <div class="ct-greg"  id="ct-greg"></div>
-    <div class="cal-live"><span id="cl-pp">00</span>:<span id="cl-oo">00</span><span class="cal-live-ms" id="cl-ms">.000</span></div>
+    <!-- Toggle button -->
+    <div class="ct-toggle-row">
+      <button class="ct-toggle-btn period-mode" id="ct-toggle-btn" onclick="toggleCalDateMode()">
+        <span id="ct-toggle-lbl">PERIOD DATE</span>
+      </button>
+    </div>
+
+    <!-- Period date view -->
+    <div class="ct-period-view" id="ct-period-view">
+      <div class="ct-month" id="ct-month">M01</div>
+      <div class="ct-day"   id="ct-day">1</div>
+      <div class="ct-wd"    id="ct-wd">D1</div>
+      <div class="ct-year"  id="ct-year">2026</div>
+      <div class="cal-live"><span id="cl-pp">00</span>:<span id="cl-oo">00</span><span class="cal-live-ms" id="cl-ms">.000</span></div>
+    </div>
+
+    <!-- Gregorian date view -->
+    <div class="ct-greg-view" id="ct-greg-view">
+      <div class="ct-greg-month" id="ct-greg-month"></div>
+      <div class="ct-greg-big"   id="ct-greg-day"></div>
+      <div class="ct-greg-year"  id="ct-greg-year"></div>
+      <div class="ct-greg-wd"    id="ct-greg-wd"></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px">
+        <div class="ct-local-time" id="ct-local-time" style="margin-top:0">00:00:00</div>
+        <button class="ct-toggle-btn greg-mode" id="ct-greg-tz-btn" onclick="toggleGregTZ()" style="font-size:.52rem;padding:2px 8px">UTC</button>
+      </div>
+    </div>
   </div>
-  <div class="cal-nav">
+  <div class="cal-nav" id="cal-nav">
     <button class="cal-nav-btn" onclick="calNav(-1)">←</button>
     <div class="cal-nav-center">
       <div class="cal-nav-title" id="cal-nav-title">PRIMA</div>
@@ -874,15 +942,51 @@ background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1
     <button class="cal-nav-btn" onclick="calNav(1)">→</button>
   </div>
   <div class="cal-view-toggle">
-    <button class="cvbtn active" id="vbtn-month" onclick="setCalView('month')">☰ <span id="vl-month">MONTH</span></button>
-    <button class="cvbtn"        id="vbtn-year"  onclick="setCalView('year')">⊞ <span id="vl-year">YEAR</span></button>
+    <button class="cvbtn active" id="vbtn-month"   onclick="setCalView('month')">☰ <span id="vl-month">MONTH</span></button>
+    <button class="cvbtn"        id="vbtn-year"    onclick="setCalView('year')">⊞ <span id="vl-year">YEAR</span></button>
+    <button class="cvbtn"        id="vbtn-convert" onclick="setCalView('convert')">⟺ <span id="vl-convert">CONVERT</span></button>
   </div>
   <div id="cal-month-view" style="width:100%">
     <div class="cal-weekdays" id="cal-weekdays"></div>
     <div class="cal-weeks"    id="cal-weeks"></div>
   </div>
   <div class="cal-year-grid" id="cal-year-view" style="display:none"></div>
-  <div class="cal-info">
+
+  <!-- DATE CONVERTER VIEW -->
+  <div id="cal-convert-view" style="display:none;width:100%">
+
+    <!-- Gregorian → Period -->
+    <div class="box" style="width:100%">
+      <div class="conv-title" id="dc-title-a">GREGORIAN → PERIOD</div>
+      <div class="dc-row">
+        <input id="dc-greg-inp" class="dc-inp" type="text" placeholder="YYYY-MM-DD" maxlength="10" oninput="calcDateConv()">
+        <button class="dc-today-btn" id="dc-today-a" onclick="dcSetToday('greg')">TODAY</button>
+      </div>
+      <div id="dc-greg-result" style="display:none">
+        <div class="dc-res-main" id="dc-greg-main"></div>
+        <div class="dc-res-sub"  id="dc-greg-sub"></div>
+        <div class="dc-breakdown" id="dc-greg-breakdown"></div>
+      </div>
+      <div class="dc-hint" id="dc-greg-hint"></div>
+    </div>
+
+    <!-- Period → Gregorian -->
+    <div class="box" style="width:100%">
+      <div class="conv-title" id="dc-title-b">PERIOD → GREGORIAN</div>
+      <div class="dc-row">
+        <input id="dc-per-inp" class="dc-inp dc-inp-pt" type="text" placeholder="YYYY-M01-DD" maxlength="12" oninput="calcDateConvRev()">
+        <button class="dc-today-btn" id="dc-today-b" onclick="dcSetToday('period')">TODAY</button>
+      </div>
+      <div id="dc-per-result" style="display:none">
+        <div class="dc-res-main" id="dc-per-main"></div>
+        <div class="dc-res-sub"  id="dc-per-sub"></div>
+        <div class="dc-breakdown" id="dc-per-breakdown"></div>
+      </div>
+      <div class="dc-hint" id="dc-per-hint"></div>
+    </div>
+
+  </div>
+  <div class="cal-info" id="cal-info">
     <span id="cal-info-months">13 months</span> × <span>28 days</span> = <span>364 days</span><br>
     + <span id="cal-info-wd">World Day</span> = <span>365 days/year</span><br>
     <span id="cal-info-every">Every month always starts on D1</span>
@@ -908,7 +1012,7 @@ background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:1
 // ── Constants ──
 const MPD=10000, RSPD=86400;
 const J2000_MS=946684800000;
-const MNAMES=['Prima','Seconda','Tertia','Quarta','Quinta','Sexta','Septima','Octava','Nona','Decima','Undecima','Duodecima','Tredecima'];
+const MNAMES=['M01','M02','M03','M04','M05','M06','M07','M08','M09','M10','M11','M12','M13'];
 const GM_EN=['January','February','March','April','May','June','July','August','September','October','November','December'];
 const GM_SV=['Januari','Februari','Mars','April','Maj','Juni','Juli','Augusti','September','Oktober','November','December'];
 const GMS_EN=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -992,6 +1096,7 @@ const sysDark=window.matchMedia('(prefers-color-scheme: dark)');
 function applyTheme(){
   const dark=currentTheme==='dark'||(currentTheme==='system'&&sysDark.matches);
   document.documentElement.setAttribute('data-theme',dark?'dark':'light');
+  document.documentElement.style.colorScheme=dark?'dark':'light';
   ['t-dark','t-system','t-light'].forEach(id=>document.getElementById(id).classList.remove('active'));
   document.getElementById('t-'+currentTheme).classList.add('active');
 }
@@ -1216,19 +1321,37 @@ function drawAnalog(t){
   cx2.clearRect(0,0,220,220);
   cx2.beginPath();cx2.arc(CX,CY,R,0,Math.PI*2);cx2.fillStyle=gv('--face');cx2.fill();
   cx2.strokeStyle=gv('--face-ring');cx2.lineWidth=3;cx2.stroke();
+  // small ticks (every period except multiples of 10)
   for(let i=0;i<100;i++){
     if(i%10===0)continue;
     const a=(i/100)*Math.PI*2-Math.PI/2;
     cx2.beginPath();cx2.moveTo(CX+Math.cos(a)*(R-8),CY+Math.sin(a)*(R-8));cx2.lineTo(CX+Math.cos(a)*(R-3),CY+Math.sin(a)*(R-3));
     cx2.strokeStyle=gv('--tick-min');cx2.lineWidth=1.5;cx2.stroke();
   }
+  // major ticks every 10, numbers, plus extra highlight at quarters (0,25,50,75)
   for(let i=0;i<10;i++){
     const a=(i/10)*Math.PI*2-Math.PI/2;
+    const isQuarter=(i%2.5===0); // 0, 25, 50, 75 → i = 0, 2.5, 5, 7.5 — use period index
     cx2.beginPath();cx2.moveTo(CX+Math.cos(a)*(R-16),CY+Math.sin(a)*(R-16));cx2.lineTo(CX+Math.cos(a)*(R-3),CY+Math.sin(a)*(R-3));
     cx2.strokeStyle=gv('--tick');cx2.lineWidth=3;cx2.stroke();
     cx2.fillStyle=gv('--num');cx2.font='bold 11px Courier New';cx2.textAlign='center';cx2.textBaseline='middle';
     cx2.fillText(i*10,CX+Math.cos(a)*(R-27),CY+Math.sin(a)*(R-27));
   }
+  // quarter marks — 0 & 50 large+labeled, 25 & 75 smaller+no label
+  [{p:0,big:true},{p:25,big:false},{p:50,big:true},{p:75,big:false}].forEach(({p,big})=>{
+    const a=(p/100)*Math.PI*2-Math.PI/2;
+    const qc=gv('--accent3');
+    cx2.shadowColor=qc;cx2.shadowBlur=big?10:5;
+    cx2.beginPath();
+    cx2.moveTo(CX+Math.cos(a)*(R-(big?18:14)),CY+Math.sin(a)*(R-(big?18:14)));
+    cx2.lineTo(CX+Math.cos(a)*(R-2),CY+Math.sin(a)*(R-2));
+    cx2.strokeStyle=qc;cx2.lineWidth=big?4:2.5;cx2.stroke();
+    cx2.shadowBlur=0;
+    if(big){
+      cx2.fillStyle=qc;cx2.font='bold 12px Courier New';cx2.textAlign='center';cx2.textBaseline='middle';
+      cx2.fillText(p,CX+Math.cos(a)*(R-27),CY+Math.sin(a)*(R-27));
+    }
+  });
   const hH=gv('--hand-h'),hM=gv('--hand-m');
   cx2.shadowColor=hH;cx2.shadowBlur=8;dh((t/MPD)*Math.PI*2-Math.PI/2,R*.55,5,hH);
   cx2.shadowColor=hM;cx2.shadowBlur=8;dh(((t%100)/100)*Math.PI*2-Math.PI/2,R*.80,2.5,hM);
@@ -1259,6 +1382,14 @@ function update(){
   drawAnalog(dt.t);
   checkAlarms(dt);
   s('cl-pp',p2(dt.p));s('cl-oo',p2(dt.o));s('cl-ms',`.${p3(dt.sub)}`);
+  // gregorian view live time
+  const ltEl=g('ct-local-time');
+  if(ltEl){
+    const h=gregUseUTC?now.getUTCHours()  :now.getHours();
+    const m=gregUseUTC?now.getUTCMinutes():now.getMinutes();
+    const sec=gregUseUTC?now.getUTCSeconds():now.getSeconds();
+    ltEl.textContent=`${p2(h)}:${p2(m)}:${p2(sec)}`;
+  }
   updateSWDisplay();
   updateCDDisplay();
   updateTZ();
@@ -1506,6 +1637,7 @@ function buildTZSelect(){
 function renderTZ(){
   const cont=g('tz-list');if(!cont)return;
   const now=new Date(),dt=getPT();
+  // Full rebuild (only when list changes)
   cont.innerHTML=tzList.map((tz,i)=>{
     const local=new Date(now.getTime()+tz.offset*3600000);
     const h=local.getUTCHours(),m=local.getUTCMinutes(),sec=local.getUTCSeconds();
@@ -1513,13 +1645,24 @@ function renderTZ(){
     return`<div class="tz-row">
       <div class="tz-name">${tz.name}</div>
       <div class="tz-offset">UTC${sign}${tz.offset}</div>
-      <div class="tz-time">${p2(h)}:${p2(m)}:${p2(sec)}</div>
-      <div class="tz-pt">${p2(dt.p)}:${p2(dt.o)}</div>
+      <div class="tz-time" id="tz-t-${i}">${p2(h)}:${p2(m)}:${p2(sec)}</div>
+      <div class="tz-pt"   id="tz-p-${i}">${p2(dt.p)}:${p2(dt.o)}</div>
       <button class="tz-remove-btn" onclick="removeTZ(${i})">×</button>
     </div>`;
   }).join('');
 }
-function updateTZ(){renderTZ();}
+function updateTZ(){
+  // Lightweight: update only the time text nodes, no DOM rebuild
+  const cont=g('tz-list');if(!cont||!tzList.length)return;
+  const now=new Date(),dt=getPT();
+  tzList.forEach((tz,i)=>{
+    const te=g('tz-t-'+i),pe=g('tz-p-'+i);
+    if(!te||!pe)return;
+    const local=new Date(now.getTime()+tz.offset*3600000);
+    te.textContent=`${p2(local.getUTCHours())}:${p2(local.getUTCMinutes())}:${p2(local.getUTCSeconds())}`;
+    pe.textContent=`${p2(dt.p)}:${p2(dt.o)}`;
+  });
+}
 function removeTZ(i){tzList.splice(i,1);renderTZ();saveState();}
 function addTZPreset(){
   const sel=g('tz-select');if(!sel)return;
@@ -1604,9 +1747,14 @@ function setCalView(v){
   calView=v;
   g('vbtn-month').classList.toggle('active',v==='month');
   g('vbtn-year').classList.toggle('active',v==='year');
-  g('cal-month-view').style.display=v==='month'?'':'none';
-  g('cal-year-view').style.display=v==='year'?'':'none';
-  renderCalendar();
+  g('vbtn-convert').classList.toggle('active',v==='convert');
+  g('cal-month-view').style.display=v==='month'?'block':'none';
+  g('cal-year-view').style.display=v==='year'?'grid':'none';
+  g('cal-convert-view').style.display=v==='convert'?'block':'none';
+  g('cal-nav').style.display=v==='convert'?'none':'flex';
+  g('cal-info').style.display=v==='convert'?'none':'block';
+  if(v!=='convert')renderCalendar();
+  else initDateConv();
 }
 function calNav(dir){
   if(calView==='year'){calViewYear+=dir;renderCalendar();return;}
@@ -1620,6 +1768,7 @@ function jumpToMonth(m){calViewMonth=m;setCalView('month');}
 
 function renderCalendar(){
   const l=L[currentLang],today=getNewDate(new Date());
+  if(calView==='convert')return;
   if(calView==='year'){renderYearView(l,today);return;}
   let navT;
   if(calViewMonth<=13)navT=MNAMES[calViewMonth-1].toUpperCase();
@@ -1685,12 +1834,196 @@ function renderYearView(l,today){
   g('cal-year-view').innerHTML=html;
 }
 
+// ── CALENDAR DATE CONVERTER ──
+function initDateConv(){
+  const l=L[currentLang];
+  g('dc-greg-hint').textContent=l.dcHintGreg||'Enter a Gregorian date, e.g. 1994-06-23';
+  g('dc-per-hint').textContent=l.dcHintPer||'Enter a Period date, e.g. 1994-M06-23';
+  s('dc-title-a',l.dcTitleA||'GREGORIAN → PERIOD');
+  s('dc-title-b',l.dcTitleB||'PERIOD → GREGORIAN');
+  s('dc-today-a',l.today||'TODAY');
+  s('dc-today-b',l.today||'TODAY');
+  s('vl-convert',l.dcBtn||'CONVERT');
+}
+
+function dcSetToday(mode){
+  if(mode==='greg'){
+    const now=new Date();
+    const y=now.getUTCFullYear(),m=String(now.getUTCMonth()+1).padStart(2,'0'),d=String(now.getUTCDate()).padStart(2,'0');
+    g('dc-greg-inp').value=`${y}-${m}-${d}`;
+    calcDateConv();
+  } else {
+    const nd=getNewDate(new Date());
+    if(nd.isWorldDay){g('dc-per-inp').value='';return;}
+    g('dc-per-inp').value=`${nd.year}-${MNAMES[nd.month-1]}-${String(nd.day).padStart(2,'0')}`;
+    calcDateConvRev();
+  }
+}
+
+function calcDateConv(){
+  try { _calcDateConv(); } catch(e){ console.error('calcDateConv error:',e); }
+}
+function _calcDateConv(){
+  const l=L[currentLang];
+  const val=g('dc-greg-inp').value.trim();
+  const res=g('dc-greg-result'),hint=g('dc-greg-hint');
+  // accept YYYY-MM-DD
+  const m=val.match(/^(\d{1,4})-(\d{1,2})-(\d{1,2})$/);
+  if(!m){res.style.display='none';hint.style.display='';hint.textContent=l.dcHintGreg||'Enter a Gregorian date, e.g. 1994-06-23';return;}
+  const yr=parseInt(m[1]),mo=parseInt(m[2])-1,dy=parseInt(m[3]);
+  if(mo<0||mo>11||dy<1||dy>31){res.style.display='none';hint.style.display='';hint.textContent=l.dcInvalid||'Invalid date';return;}
+  const date=new Date(Date.UTC(yr,mo,dy));
+  if(date.getUTCMonth()!==mo){res.style.display='none';hint.style.display='';hint.textContent=l.dcInvalid||'Invalid date';return;}
+  const nd=getNewDate(date);
+  res.style.display='block';hint.style.display='none';
+
+  const GM=currentLang==='sv'?GM_EN:GM_EN; // always show Gregorian in EN for clarity
+  const gregWDs=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+
+  if(nd.isWorldDay){
+    s('dc-greg-main',nd.isLeapDay?l.leapDay:l.worldDay);
+    s('dc-greg-sub',`${nd.year}`);
+    g('dc-greg-breakdown').innerHTML=`
+      <div class="span-bd-item" style="grid-column:1/-1">
+        <div class="span-bd-val">${nd.isLeapDay?'✨':'🌍'}</div>
+        <div class="span-bd-lbl">${nd.isLeapDay?l.leapDay:l.worldDay} ${nd.year}</div>
+      </div>`;
+  } else {
+    const wdName=gregWDs[date.getUTCDay()];
+    s('dc-greg-main',`${nd.year} · ${MNAMES[nd.month-1]} · ${String(nd.day).padStart(2,'0')}`);
+    s('dc-greg-sub',`D${nd.wd+1}  (${wdName})`);
+    // day of period year
+    const doy=(nd.month-1)*28+nd.day;
+    g('dc-greg-breakdown').innerHTML=`
+      <div class="span-bd-item">
+        <div class="span-bd-val">${nd.year}</div>
+        <div class="span-bd-lbl">${l.dcYear||'PERIOD YEAR'}</div>
+      </div>
+      <div class="span-bd-item">
+        <div class="span-bd-val">${MNAMES[nd.month-1]}</div>
+        <div class="span-bd-lbl">${l.dcMonth||'PERIOD MONTH'}</div>
+      </div>
+      <div class="span-bd-item">
+        <div class="span-bd-val">${nd.day} (D${nd.wd+1})</div>
+        <div class="span-bd-lbl">${l.dcDay||'DAY (WEEKDAY)'}</div>
+      </div>
+      <div class="span-bd-item">
+        <div class="span-bd-val">${doy} / 364</div>
+        <div class="span-bd-lbl">${l.dcDoy||'DAY OF YEAR'}</div>
+      </div>`;
+  }
+}
+
+function calcDateConvRev(){
+  try { _calcDateConvRev(); } catch(e){ console.error('calcDateConvRev error:',e); }
+}
+function _calcDateConvRev(){
+  const l=L[currentLang];
+  const val=g('dc-per-inp').value.trim().toUpperCase();
+  const res=g('dc-per-result'),hint=g('dc-per-hint');
+  // accept YYYY-M01-DD or YYYY-1-DD (number) or YYYY-WD / YYYY-LD
+  let yr,mo,dy;
+  // try YYYY-Mxx-DD
+  const m1=val.match(/^(\d{1,4})-M(\d{1,2})-(\d{1,2})$/);
+  // try YYYY-N-DD (plain number month)
+  const m2=val.match(/^(\d{1,4})-(\d{1,2})-(\d{1,2})$/);
+  // try YYYY-WD or YYYY-LD
+  const m3=val.match(/^(\d{1,4})-(WD|LD)$/);
+
+  if(m1){yr=parseInt(m1[1]);mo=parseInt(m1[2]);dy=parseInt(m1[3]);}
+  else if(m2){yr=parseInt(m2[1]);mo=parseInt(m2[2]);dy=parseInt(m2[3]);}
+  else if(m3){
+    yr=parseInt(m3[1]);
+    const isLD=m3[2]==='LD';
+    const gd=specialDayGreg(yr,isLD);
+    res.style.display='block';hint.style.display='none';
+    const GM_months=GM_EN;
+    s('dc-per-main',`${gd.getUTCDate()} ${GM_months[gd.getUTCMonth()]} ${yr}`);
+    s('dc-per-sub',isLD?l.leapDay:l.worldDay);
+    g('dc-per-breakdown').innerHTML=`<div class="span-bd-item" style="grid-column:1/-1">
+      <div class="span-bd-val">${isLD?'✨':'🌍'} ${yr}</div>
+      <div class="span-bd-lbl">${isLD?l.leapDay:l.worldDay}</div>
+    </div>`;
+    return;
+  } else {
+    res.style.display='none';hint.style.display='';
+    hint.textContent=l.dcHintPer||'Enter a Period date, e.g. 1994-M06-23 or 2026-WD';
+    return;
+  }
+
+  if(!yr||mo<1||mo>13||dy<1||dy>28){
+    res.style.display='none';hint.style.display='';hint.textContent=l.dcInvalid||'Invalid date';return;
+  }
+  const gd=newToGreg(yr,mo,dy);
+  res.style.display='block';hint.style.display='none';
+
+  const GM_months=GM_EN;
+  const gregWDs=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const wdName=gregWDs[gd.getUTCDay()];
+  const doy=(mo-1)*28+dy;
+
+  s('dc-per-main',`${gd.getUTCDate()} ${GM_months[gd.getUTCMonth()]} ${gd.getUTCFullYear()}`);
+  s('dc-per-sub',wdName);
+  g('dc-per-breakdown').innerHTML=`
+    <div class="span-bd-item">
+      <div class="span-bd-val">${gd.getUTCFullYear()}</div>
+      <div class="span-bd-lbl">GREG. YEAR</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${GM_months[gd.getUTCMonth()]}</div>
+      <div class="span-bd-lbl">GREG. MONTH</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${gd.getUTCDate()}</div>
+      <div class="span-bd-lbl">GREG. DAY</div>
+    </div>
+    <div class="span-bd-item">
+      <div class="span-bd-val">${doy} / 364</div>
+      <div class="span-bd-lbl">${l.dcDoy||'DAY OF YEAR'}</div>
+    </div>`;
+}
+
+// ── CALENDAR DATE CONVERTER end ──
+
+let gregUseUTC=false, calDateMode='period';
+
+function toggleGregTZ(){
+  gregUseUTC=!gregUseUTC;
+  const btn=g('ct-greg-tz-btn');
+  btn.textContent=gregUseUTC?'UTC':'LOCAL';
+  updateCalToday();
+}
+
+function toggleCalDateMode(){
+  calDateMode=calDateMode==='period'?'greg':'period';
+  const btn=g('ct-toggle-btn');
+  const l=L[currentLang];
+  const isPeriod=calDateMode==='period';
+  btn.className='ct-toggle-btn '+(isPeriod?'period-mode':'greg-mode');
+  s('ct-toggle-lbl',isPeriod?(l.periodDate||'PERIOD DATE'):(l.gregDateLbl||'GREGORIAN'));
+  g('ct-period-view').style.display=isPeriod?'block':'none';
+  g('ct-greg-view').style.display=isPeriod?'none':'block';
+  updateCalToday();
+}
+
 function updateCalToday(){
   const l=L[currentLang],nd=getNewDate(new Date()),now=new Date();
+  // Period view
   if(nd.isWorldDay){s('ct-month',nd.isLeapDay?l.leapDay:l.worldDay);s('ct-day','🌍');s('ct-wd','');}
   else{s('ct-month',MNAMES[nd.month-1].toUpperCase());s('ct-day',nd.day);s('ct-wd',WEEKDAYS_LONG[nd.wd]);}
   s('ct-year',nd.year);
-  s('ct-greg',l.gregDate(now.getUTCDate(),now.getUTCMonth(),now.getUTCFullYear()));
+  // Gregorian view — use UTC or local depending on toggle
+  const GM=currentLang==='sv'?GM_SV:GM_EN;
+  const gregWDs=  ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const gregWDsSV=['Sön','Mån','Tis','Ons','Tor','Fre','Lör'];
+  const gDay  =gregUseUTC?now.getUTCDate()    :now.getDate();
+  const gMonth=gregUseUTC?now.getUTCMonth()   :now.getMonth();
+  const gYear =gregUseUTC?now.getUTCFullYear():now.getFullYear();
+  const gWD   =gregUseUTC?now.getUTCDay()     :now.getDay();
+  s('ct-greg-month',GM[gMonth].toUpperCase());
+  s('ct-greg-day',gDay);
+  s('ct-greg-year',gYear);
+  s('ct-greg-wd',(currentLang==='sv'?gregWDsSV:gregWDs)[gWD]);
 }
 
 // ── DURATION CALCULATOR ──
